@@ -452,15 +452,13 @@ const classes = [
   { date: "May 25, 2026", day: "Monday",   time: "6:00 AM",  key: "20260525" },
 ];
 
-const BIN_ID = '69eab86536566621a8e628d6';
-const API_KEY = '$2a$10$/UgM1hn1i2qdWvClUys6u.3u4CF4Gx1G/P0DUfKDGHILryo1hP5nW';
-const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
+const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbywP5_sVEkbA4GjK6uCoUVhb4RQj1NvqSHXbF3TiOP8cgBbyZzxz9OIY9B7iNpDbIPGQQ/exec';
 let notes = {};
 
-async function loadNotes() {
+function loadNotes() {
   const status = document.getElementById('load-status');
 
-  // Show cached notes instantly from localStorage first
+  // Show cached notes instantly
   try {
     const cached = localStorage.getItem('xz_notes_cache');
     if (cached) {
@@ -472,14 +470,10 @@ async function loadNotes() {
     }
   } catch(e) {}
 
-  // Then silently sync from JSONBin in background
-  try {
-    const res = await fetch(BIN_URL + '/latest', {
-      headers: { 'X-Master-Key': API_KEY }
-    });
-    const json = await res.json();
-    const fresh = json.record || {};
-    // Only update if different from cache
+  // Sync in background via JSONP
+  const cbName = 'cb_load_' + Date.now();
+  const script = document.createElement('script');
+  window[cbName] = function(fresh) {
     if (JSON.stringify(fresh) !== JSON.stringify(notes)) {
       notes = fresh;
       classes.forEach(c => {
@@ -491,9 +485,11 @@ async function loadNotes() {
     status.textContent = 'Synced ✓';
     status.style.opacity = '1';
     setTimeout(() => { status.style.opacity = '0'; }, 2000);
-  } catch(e) {
-    // Fail silently - cached notes still show
-  }
+    delete window[cbName];
+    script.remove();
+  };
+  script.src = SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
+  document.head.appendChild(script);
 }
 
 function groupByMonth(arr) {
@@ -532,7 +528,7 @@ Object.entries(groups).forEach(([month, items]) => {
 loadNotes();
 document.getElementById('today').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
-async function saveNotes() {
+function saveNotes() {
   classes.forEach(c => {
     const el = document.getElementById('note_' + c.key);
     if (el) notes[c.key] = el.value;
@@ -540,27 +536,27 @@ async function saveNotes() {
   const toast = document.getElementById('toast');
   toast.textContent = 'Saving…';
   toast.classList.add('show');
-  try {
-    const res = await fetch(BIN_URL, {
-      method: 'PUT',
-      headers: {
-        'Content-Type': 'application/json',
-        'X-Master-Key': API_KEY
-      },
-      body: JSON.stringify(notes)
-    });
-    if (!res.ok) throw new Error('Save failed');
-    localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
-    toast.textContent = 'Notes saved! ✓';
+  localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
+
+  const cbName = 'cb_save_' + Date.now();
+  const script = document.createElement('script');
+  window[cbName] = function(result) {
+    toast.textContent = result.status === 'ok' ? 'Notes saved! ✓' : 'Save failed';
     setTimeout(() => { toast.classList.remove('show'); toast.textContent = 'Notes saved!'; }, 2500);
-  } catch(e) {
+    delete window[cbName];
+    script.remove();
+  };
+  script.onerror = function() {
     toast.textContent = 'Save failed — check connection';
     setTimeout(() => { toast.classList.remove('show'); toast.textContent = 'Notes saved!'; }, 3000);
-  }
+  };
+  const encoded = encodeURIComponent(JSON.stringify(notes));
+  script.src = SCRIPT_URL + '?action=save&data=' + encoded + '&callback=' + cbName;
+  document.head.appendChild(script);
 }
 
 
-async function buildSummary() {
+function buildSummary() {
   saveNotes();
   const section = document.getElementById('summary-section');
   const list = document.getElementById('summary-list');
@@ -578,35 +574,35 @@ async function buildSummary() {
 
   meta.textContent = filled.length + ' of ' + classes.length + ' classes have notes';
 
-  // Extract keywords from notes
-  const stopWords = new Set(['the','a','an','and','or','but','in','on','at','to','for','of','with','is','was','are','were','be','been','have','has','had','do','did','will','would','can','could','should','i','we','you','he','she','they','it','this','that','from','as','by','about','into','during','after','before','so','what','how','when','if','up','out','then','also','just','each','class','today','worked','went','did','got','felt','felt','felt','session','time','next']);
+  // Extract keywords
+  const stopWords = new Set(['the','and','for','with','this','that','was','are','have','has','had','will','from','they','been','were','also','into','what','when','then','than','just','more','some','can','each','she','his','her','him','its','our','your','but','not','all','one','two','three','class','today','worked','went','got','felt','session','time','next','side','left','right','both','back','front','very','good','well','need','work','keep','make','feel','going','little','still','did','get','use','used','more','less','really','again','about','after','before','during','while','same','like','done','able','here','there','their','them','these','those','would','could','should','shall','will','been','being','doing','having','making','taking','going','coming','saying','getting','putting','turning','looking','trying','seems','seemed','seemed']);
+
   const wordCount = {};
   filled.forEach(c => {
-    const words = (notes[c.key] || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/);
+    const words = (notes[c.key] || '').toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/);
     words.forEach(w => {
       if (w.length > 3 && !stopWords.has(w)) {
         wordCount[w] = (wordCount[w] || 0) + 1;
       }
     });
   });
+
   const keywords = Object.entries(wordCount)
     .sort((a, b) => b[1] - a[1])
-    .slice(0, 12)
-    .map(e => e[0]);
+    .slice(0, 14)
+    .map(([w]) => w.charAt(0).toUpperCase() + w.slice(1));
 
-  // Stats
   const totalNotes = filled.length;
+  const recentDate = filled[filled.length - 1].date;
   const allText = filled.map(c => notes[c.key]).join(' ');
-  const wordTotal = allText.trim().split(/\s+/).length;
+  const wordTotal = allText.trim().split(/\s+/).filter(w => w.length > 0).length;
 
-  // Build AI-style summary box
   const aiBox = document.createElement('div');
   aiBox.className = 'ai-summary-box';
-  aiBox.innerHTML = `
-    <h3>Progress Overview <span class="ai-badge">Auto Summary</span></h3>
-    <div class="ai-summary-text">Xuanle has completed <strong>${totalNotes}</strong> documented sessions out of ${classes.length} total classes, with instructors logging ${wordTotal} words of lesson notes across the training period.</div>
-    ${keywords.length > 0 ? '<div class="ai-keywords">' + keywords.map(k => '<span class="ai-keyword">' + k + '</span>').join('') + '</div>' : ''}
-  `;
+  aiBox.innerHTML =
+    '<h3>Progress Overview <span class="ai-badge">Keywords</span></h3>' +
+    '<div class="ai-summary-text">' + totalNotes + ' of ' + classes.length + ' sessions documented, ' + wordTotal + ' words of notes logged. Most recent class: ' + recentDate + '.</div>' +
+    (keywords.length > 0 ? '<div class="ai-keywords">' + keywords.map(k => '<span class="ai-keyword">' + k + '</span>').join('') + '</div>' : '');
   list.appendChild(aiBox);
 
   // Individual notes
