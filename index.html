@@ -377,13 +377,139 @@
   }
   @keyframes spin { to { transform: rotate(360deg); } }
 
+  .page-layout {
+    display: flex;
+    align-items: flex-start;
+    max-width: 1100px;
+    margin: 0 auto;
+    gap: 0;
+  }
+
+  main {
+    flex: 1;
+    min-width: 0;
+    max-width: 760px;
+    padding: 40px 24px 80px;
+  }
+
+  .summary-panel {
+    width: 260px;
+    flex-shrink: 0;
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    min-height: calc(100vh - 160px);
+    padding: 24px 20px;
+    position: sticky;
+    top: 0;
+    max-height: 100vh;
+    overflow-y: auto;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  .btn-refresh {
+    font-size: 18px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.3s;
+    line-height: 1;
+  }
+
+  .btn-refresh:hover { background: var(--bg); color: var(--text); }
+  .btn-refresh.spinning { animation: spin 0.6s linear; }
+
+  .panel-empty {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .panel-section {
+    margin-bottom: 20px;
+  }
+
+  .panel-section-title {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .panel-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 10px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 12.5px;
+    font-weight: 300;
+    color: var(--text);
+    background: var(--bg);
+    gap: 8px;
+  }
+
+  .panel-item.done {
+    background: #EAF5EC;
+    color: #2A6B35;
+  }
+
+  .panel-item-label { flex: 1; line-height: 1.4; }
+
+  .panel-count {
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 100px;
+    padding: 1px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .panel-item.done .panel-count {
+    background: #C8EDD0;
+    color: #2A6B35;
+  }
+
+  @media (max-width: 860px) {
+    .page-layout { flex-direction: column; }
+    .summary-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); position: static; max-height: none; }
+    main { max-width: 100%; }
+  }
+
   @media (max-width: 520px) {
     header { padding: 32px 20px 28px; }
     main { padding: 28px 16px 60px; }
     .class-card { grid-template-columns: 1fr; gap: 10px; }
     .summary-row { grid-template-columns: 1fr; gap: 4px; }
     .actions { flex-wrap: wrap; }
-    .week-grid { grid-template-columns: 1fr !important; }
   }
 
   @media print {
@@ -406,25 +532,26 @@
   </div>
 </header>
 
-<main>
-  <div id="schedule"></div>
-
-  <div class="actions">
-    <button class="btn-save" onclick="saveNotes()">Save notes</button>
-    <button class="btn-summary" onclick="buildSummary()">View summary</button>
-    <button class="btn-print" onclick="window.print()">Print / PDF</button>
-    <span class="saved-toast" id="toast">Notes saved!</span>
-    <span class="saved-toast" id="load-status" style="opacity:0;"></span>
-  </div>
-
-  <div class="summary-section" id="summary-section" style="display:none;">
-    <div class="summary-header">
-      <div class="summary-title">Lesson summary</div>
-      <div class="summary-meta" id="summary-meta"></div>
+<div class="page-layout">
+  <main>
+    <div id="schedule"></div>
+    <div class="actions">
+      <button class="btn-save" onclick="saveNotes()">Save notes</button>
+      <button class="btn-print" onclick="window.print()">Print / PDF</button>
+      <span class="saved-toast" id="toast">Notes saved!</span>
+      <span class="saved-toast" id="load-status" style="opacity:0;"></span>
     </div>
-    <div id="summary-list"></div>
-  </div>
-</main>
+  </main>
+
+  <aside class="summary-panel" id="summary-panel">
+    <div class="panel-header">
+      <div class="panel-title">Progress tracker</div>
+      <button class="btn-refresh" onclick="buildSummary()" title="Refresh">&#8635;</button>
+    </div>
+    <div class="panel-empty" id="panel-empty">Hit refresh to scan your notes.</div>
+    <div id="panel-list"></div>
+  </aside>
+</div>
 
 <footer>Xuanle Zhou · Class Schedule · Last updated <span id="today"></span></footer>
 
@@ -577,65 +704,99 @@ function saveNotes() {
 }
 
 
-function buildSummary() {
-  saveNotes();
-  const section = document.getElementById('summary-section');
-  const list = document.getElementById('summary-list');
-  const meta = document.getElementById('summary-meta');
-  const filled = classes.filter(c => notes[c.key] && notes[c.key].trim() !== '');
-  section.style.display = 'block';
-  list.innerHTML = '';
+const KEYWORDS = [
+  { label: 'Normal takeoffs', terms: ['normal takeoff', 'normal t/o', 'normal to', 'nto'] },
+  { label: 'Normal landings', terms: ['normal landing', 'normal ldg', 'nldg'] },
+  { label: 'Straight & level / climbs / descents / turns', terms: ['straight and level', 'straight & level', 's&l', 'climb', 'descent', 'descend', 'level flight', 'turns'] },
+  { label: 'Slow flight', terms: ['slow flight', 'slow-flight', 'slowflight', 'sf'] },
+  { label: 'Power-off stalls', terms: ['power off stall', 'power-off stall', 'poweroff stall', 'pos', 'power off'] },
+  { label: 'Power-on stalls', terms: ['power on stall', 'power-on stall', 'poweron stall', 'pons', 'power on stall'] },
+  { label: 'Steep turns', terms: ['steep turn', 'steep turns', '45 degree', '45°', '45 bank', 'steep'] },
+  { label: 'Traffic pattern operations', terms: ['traffic pattern', 'pattern work', 'pattern ops', 'touch and go', 'touch & go', 't&g', 'tng', 'touch-and-go', 'pattern'] },
+  { label: 'Rectangular course', terms: ['rectangular course', 'rectangular', 'rect course', 'rect'] },
+  { label: 'S-turns', terms: ['s-turn', 's turn', 's turns', 's-turns'] },
+  { label: 'Turns around a point', terms: ['turns around a point', 'turn around a point', 'tap', 'around a point'] },
+  { label: 'Crosswind takeoffs & landings', terms: ['crosswind', 'cross wind', 'cross-wind', 'xwind'] },
+  { label: 'Forward and side slips', terms: ['slip', 'slips', 'forward slip', 'side slip', 'sideslip', 'fwd slip'] },
+  { label: 'Go-arounds / rejected takeoffs', terms: ['go around', 'go-around', 'goaround', 'rejected takeoff', 'rejected t/o', 'go arnd'] },
+  { label: 'Emergency approach & landing', terms: ['emergency', 'emergency landing', 'emergency approach', 'forced landing', 'engine out', 'engine failure'] },
+  { label: 'Supervised solo', terms: ['solo', 'first solo', 'supervised solo', '1st solo'] },
+  { label: 'Short-field takeoff & max climb', terms: ['short field', 'short-field', 'shortfield', 'max performance climb', 'maximum performance', 'sfto', 'sfl'] },
+  { label: 'Soft-field takeoff & landing', terms: ['soft field', 'soft-field', 'softfield', 'sfto', 'soft'] },
+  { label: 'Pilotage cross-countries (25–50 NM)', terms: ['pilotage', 'cross country', 'cross-country', 'xc', 'x-c', '25 nm', '50 nm', 'cross cntry'] },
+  { label: 'Diversion procedures', terms: ['diversion', 'divert', 'alternate', 'diversionary'] },
+  { label: 'Lost procedures', terms: ['lost', 'lost procedures', 'lost comms', 'lost procedure'] },
+  { label: 'Emergency descent', terms: ['emergency descent', 'rapid descent', 'emerg descent'] },
+  { label: 'Solo cross-country (nearby airport)', terms: ['solo cross country', 'solo xc', 'solo cross-country', 'solo xctry'] },
+  { label: 'Attitude instrument flight', terms: ['attitude instrument', 'instrument flight', 'under the hood', 'hood work', 'unusual attitude', 'instrument', 'ifr', 'basic attitude'] },
+  { label: 'VOR and GPS navigation', terms: ['vor', 'gps', 'navigation', 'nav', 'vor nav', 'gps nav'] },
+  { label: 'Dead reckoning', terms: ['dead reckoning', 'dr nav', 'ded reckoning', 'dr'] },
+  { label: 'Night takeoffs & landings', terms: ['night takeoff', 'night landing', 'night t/o', 'night ldg', 'night pattern'] },
+  { label: 'Night cross-country', terms: ['night cross country', 'night xc', 'night cross-country', 'night xctry'] },
+  { label: 'Solo day cross-country', terms: ['solo day cross', 'solo day xc', '150 nm', '3 legs', 'long xc', 'solo day'] },
+  { label: 'Full ACS checkride review', terms: ['checkride', 'check ride', 'acs', 'practical test', 'review', 'maneuver review', 'checkride review'] },
+];
 
-  if (filled.length === 0) {
-    list.innerHTML = '<div class="summary-empty">No lesson notes yet. Ask your instructor to fill in the boxes above!</div>';
-    meta.textContent = '';
-    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+function buildSummary() {
+  const btn = document.querySelector('.btn-refresh');
+  btn.classList.add('spinning');
+  setTimeout(() => btn.classList.remove('spinning'), 600);
+
+  const panelEmpty = document.getElementById('panel-empty');
+  const panelList = document.getElementById('panel-list');
+  panelList.innerHTML = '';
+
+  const allNotes = Object.values(notes).join(' ').toLowerCase();
+
+  if (!allNotes.trim()) {
+    panelEmpty.style.display = 'block';
+    panelEmpty.textContent = 'No notes yet — fill in some lessons first!';
     return;
   }
 
-  meta.textContent = filled.length + ' of ' + classes.length + ' classes have notes';
+  panelEmpty.style.display = 'none';
 
-  // Extract keywords
-  const stopWords = new Set(['the','and','for','with','this','that','was','are','have','has','had','will','from','they','been','were','also','into','what','when','then','than','just','more','some','can','each','she','his','her','him','its','our','your','but','not','all','one','two','three','class','today','worked','went','got','felt','session','time','next','side','left','right','both','back','front','very','good','well','need','work','keep','make','feel','going','little','still','did','get','use','used','more','less','really','again','about','after','before','during','while','same','like','done','able','here','there','their','them','these','those','would','could','should','shall','will','been','being','doing','having','making','taking','going','coming','saying','getting','putting','turning','looking','trying','seems','seemed','seemed']);
+  const found = [];
+  const notFound = [];
 
-  const wordCount = {};
-  filled.forEach(c => {
-    const words = (notes[c.key] || '').toLowerCase().replace(/[^a-z\s]/g, ' ').split(/\s+/);
-    words.forEach(w => {
-      if (w.length > 3 && !stopWords.has(w)) {
-        wordCount[w] = (wordCount[w] || 0) + 1;
-      }
+  KEYWORDS.forEach(kw => {
+    let count = 0;
+    kw.terms.forEach(term => {
+      const regex = new RegExp(term.replace(/[.*+?^${}()|[\]\\]/g, '\\$&'), 'gi');
+      const matches = allNotes.match(regex);
+      if (matches) count += matches.length;
     });
+    if (count > 0) found.push({ label: kw.label, count });
+    else notFound.push({ label: kw.label });
   });
 
-  const keywords = Object.entries(wordCount)
-    .sort((a, b) => b[1] - a[1])
-    .slice(0, 14)
-    .map(([w]) => w.charAt(0).toUpperCase() + w.slice(1));
+  // Practiced section
+  if (found.length > 0) {
+    const sec = document.createElement('div');
+    sec.className = 'panel-section';
+    sec.innerHTML = '<div class="panel-section-title">Practiced (' + found.length + ')</div>';
+    found.sort((a, b) => b.count - a.count).forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'panel-item done';
+      el.innerHTML = '<span class="panel-item-label">' + item.label + '</span><span class="panel-count">' + item.count + 'x</span>';
+      sec.appendChild(el);
+    });
+    panelList.appendChild(sec);
+  }
 
-  const totalNotes = filled.length;
-  const recentDate = filled[filled.length - 1].date;
-  const allText = filled.map(c => notes[c.key]).join(' ');
-  const wordTotal = allText.trim().split(/\s+/).filter(w => w.length > 0).length;
-
-  const aiBox = document.createElement('div');
-  aiBox.className = 'ai-summary-box';
-  aiBox.innerHTML =
-    '<h3>Progress Overview <span class="ai-badge">Keywords</span></h3>' +
-    '<div class="ai-summary-text">' + totalNotes + ' of ' + classes.length + ' sessions documented, ' + wordTotal + ' words of notes logged. Most recent class: ' + recentDate + '.</div>' +
-    (keywords.length > 0 ? '<div class="ai-keywords">' + keywords.map(k => '<span class="ai-keyword">' + k + '</span>').join('') + '</div>' : '');
-  list.appendChild(aiBox);
-
-  // Individual notes
-  filled.forEach(c => {
-    const row = document.createElement('div');
-    row.className = 'summary-row';
-    const noteText = (notes[c.key] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
-    row.innerHTML = '<div><div class="summary-date"><span class="dot"></span>' + c.date + '</div><div class="summary-time">' + c.day + ' · ' + c.time + '</div></div><div class="summary-note-text">' + noteText + '</div>';
-    list.appendChild(row);
-  });
-
-  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // Not yet section
+  if (notFound.length > 0) {
+    const sec = document.createElement('div');
+    sec.className = 'panel-section';
+    sec.innerHTML = '<div class="panel-section-title">Not yet (' + notFound.length + ')</div>';
+    notFound.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'panel-item';
+      el.innerHTML = '<span class="panel-item-label">' + item.label + '</span>';
+      sec.appendChild(el);
+    });
+    panelList.appendChild(sec);
+  }
 }
 
 
