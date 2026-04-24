@@ -383,6 +383,7 @@
     .class-card { grid-template-columns: 1fr; gap: 10px; }
     .summary-row { grid-template-columns: 1fr; gap: 4px; }
     .actions { flex-wrap: wrap; }
+    .week-grid { grid-template-columns: 1fr !important; }
   }
 
   @media print {
@@ -397,7 +398,7 @@
 
 <header>
   <div class="header-inner">
-    <h1>Xuanle Zhou<br><span>Class Schedule</span></h1>
+    <h1>Xuanle<br><span>Class Schedule</span></h1>
     <div class="header-meta">
       <span class="badge"><strong>21</strong> sessions booked</span>
       <span class="badge"><strong>Apr 23</strong> — <strong>May 25, 2026</strong></span>
@@ -502,19 +503,28 @@ document.getElementById('today').textContent = new Date().toLocaleDateString('en
 
 // Load from Google first, then render
 function renderSchedule() {
-  const groups = groupByWeek(classes);
+  const weeks = groupByWeek(classes);
   const container = document.getElementById('schedule');
   container.innerHTML = '';
-  groups.forEach(({ label, items }) => {
+  weeks.forEach(({ label, items }) => {
     const group = document.createElement('div');
     group.className = 'month-group';
     group.innerHTML = '<div class="month-title">' + label + ' <span class="month-count">' + items.length + ' class' + (items.length > 1 ? 'es' : '') + '</span></div>';
+
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + items.length + ',1fr);gap:10px;';
+
     items.forEach(c => {
-      const card = document.createElement('div');
-      card.className = 'class-card';
-      card.innerHTML = '<div class="date-info"><div class="date-main"><span class="dot"></span>' + c.date + '</div><div class="date-sub">' + c.day + ' · ' + c.time + '</div></div><textarea class="notes-area" id="note_' + c.key + '" placeholder="Lesson plan / goals for this class…" rows="2">' + (notes[c.key] || '') + '</textarea>';
-      group.appendChild(card);
+      const col = document.createElement('div');
+      col.style.cssText = 'background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;';
+      col.innerHTML =
+        '<div style="font-size:13px;font-weight:500;color:var(--text)"><span class="dot"></span>' + c.date + '</div>' +
+        '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + '</div>' +
+        '<textarea class="notes-area" id="note_' + c.key + '" placeholder="Notes…" style="flex:1;min-height:100px;">' + (notes[c.key] || '') + '</textarea>';
+      grid.appendChild(col);
     });
+
+    group.appendChild(grid);
     container.appendChild(group);
   });
 }
