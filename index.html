@@ -502,13 +502,13 @@ document.getElementById('today').textContent = new Date().toLocaleDateString('en
 
 // Load from Google first, then render
 function renderSchedule() {
-  const groups = groupByMonth(classes);
+  const groups = groupByWeek(classes);
   const container = document.getElementById('schedule');
   container.innerHTML = '';
-  Object.entries(groups).forEach(([month, items]) => {
+  groups.forEach(({ label, items }) => {
     const group = document.createElement('div');
     group.className = 'month-group';
-    group.innerHTML = '<div class="month-title">' + month + ' <span class="month-count">' + items.length + ' class' + (items.length > 1 ? 'es' : '') + '</span></div>';
+    group.innerHTML = '<div class="month-title">' + label + ' <span class="month-count">' + items.length + ' class' + (items.length > 1 ? 'es' : '') + '</span></div>';
     items.forEach(c => {
       const card = document.createElement('div');
       card.className = 'class-card';
@@ -519,14 +519,26 @@ function renderSchedule() {
   });
 }
 
-function groupByMonth(arr) {
-  const groups = {};
+function groupByWeek(arr) {
+  const weeks = [];
+  const weekMap = {};
   arr.forEach(c => {
-    const m = c.date.split(' ')[0] + ' ' + c.date.split(' ')[2];
-    if (!groups[m]) groups[m] = [];
-    groups[m].push(c);
+    const d = new Date(c.date);
+    const day = d.getDay();
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const key = monday.toISOString().slice(0, 10);
+    const label = 'Week of ' + fmt(monday) + ' – ' + fmt(sunday);
+    if (!weekMap[key]) {
+      weekMap[key] = { label, items: [] };
+      weeks.push(weekMap[key]);
+    }
+    weekMap[key].items.push(c);
   });
-  return groups;
+  return weeks;
 }
 
 function saveNotes() {
