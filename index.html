@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xuanle Zhou — Class Schedule</title>
+<title>Xuanle — Class Schedule Plan Plan</title>
 <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
@@ -539,51 +539,7 @@
     color: #B5B2AB;
   }
 
-  .fab-save {
-    position: fixed;
-    bottom: 32px;
-    right: 32px;
-    z-index: 999;
-    background: var(--accent);
-    color: #fff;
-    border: none;
-    border-radius: 100px;
-    padding: 14px 28px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    box-shadow: 0 4px 20px rgba(200,85,61,0.4);
-    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-  .fab-save:hover {
-    opacity: 0.92;
-    transform: translateY(-2px);
-    box-shadow: 0 6px 24px rgba(200,85,61,0.5);
-  }
-  .fab-save:active { transform: scale(0.96); }
-  .fab-save .fab-icon { font-size: 15px; }
-  .fab-toast {
-    position: fixed;
-    bottom: 90px;
-    right: 32px;
-    z-index: 999;
-    background: var(--text);
-    color: #fff;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 13px;
-    font-weight: 300;
-    padding: 8px 18px;
-    border-radius: 100px;
-    opacity: 0;
-    transform: translateY(6px);
-    transition: opacity 0.25s, transform 0.25s;
-    pointer-events: none;
-  }
-  .fab-toast.show { opacity: 1; transform: translateY(0); }
+
 
   @media (max-width: 860px) {
     .page-layout { flex-direction: column; }
@@ -613,10 +569,11 @@
   <div class="header-inner">
     <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
       <div>
-        <h1>Xuanle<br><span>Class Schedule</span></h1>
+        <h1>Xuanle<br><span>Class Schedule Plan</span></h1>
         <div class="header-meta">
           <span class="badge"><strong>21</strong> sessions booked</span>
           <span class="badge"><strong>Apr 23</strong> — <strong>May 25, 2026</strong></span>
+          <span class="badge">Updated <strong id="last-updated">—</strong></span>
         </div>
       </div>
       <div style="display:flex;align-items:center;gap:10px;padding-top:8px;">
@@ -648,7 +605,7 @@
   </aside>
 </div>
 
-<footer>Xuanle Zhou · Class Schedule · Last updated <span id="today"></span></footer>
+<footer>Xuanle Zhou · Class Schedule Plan · Last updated <span id="today"></span></footer>
 
 <script>
 const classes = [
@@ -697,7 +654,13 @@ function loadNotes() {
   window[cbName] = function(fresh) {
     notes = fresh;
     localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
+  const now2 = new Date();
+  const updatedStr = now2.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + now2.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  localStorage.setItem('xz_last_updated', updatedStr);
+  const luEl = document.getElementById('last-updated');
+  if (luEl) luEl.textContent = updatedStr;
     renderSchedule();
+    buildSummary();
     status.textContent = 'Synced ✓';
     setTimeout(() => { status.style.opacity = '0'; }, 2000);
     delete window[cbName];
@@ -705,6 +668,7 @@ function loadNotes() {
   };
   script.onerror = function() {
     renderSchedule();
+    buildSummary();
     status.textContent = 'Loaded from cache';
     setTimeout(() => { status.style.opacity = '0'; }, 2000);
   };
@@ -722,6 +686,8 @@ function loadNotes() {
 }
 
 document.getElementById('today').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+const savedUpdated = localStorage.getItem('xz_last_updated');
+if (savedUpdated) { const luEl = document.getElementById('last-updated'); if (luEl) luEl.textContent = savedUpdated; }
 
 // Load from Google first, then render
 function renderSchedule() {
@@ -757,6 +723,7 @@ function renderSchedule() {
         suggestion.style.height = this.style.height;
         showSuggestion(this, suggestion);
         liveScan();
+        scheduleAutoSave();
       });
 
       ta.addEventListener('keydown', function(e) {
@@ -812,7 +779,15 @@ function groupByWeek(arr) {
   return weeks;
 }
 
-function saveNotes() {
+let autoSaveTimer = null;
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    saveNotes(true);
+  }, 1500);
+}
+
+function saveNotes(silent) {
   classes.forEach(c => {
     const el = document.getElementById('note_' + c.key);
     if (el) notes[c.key] = el.value;
@@ -821,15 +796,19 @@ function saveNotes() {
   // Save to localStorage instantly — feels immediate
   localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
 
-  // Show saved immediately without waiting for Google
-  const toast = document.getElementById('toast');
-  toast.textContent = 'Notes saved! ✓';
-  toast.classList.add('show');
-  setTimeout(() => { toast.classList.remove('show'); }, 2000);
-  const toastTop = document.getElementById('toast-top');
-  if (toastTop) { toastTop.textContent = 'Saved! ✓'; toastTop.style.opacity = '1'; setTimeout(() => { toastTop.style.opacity = '0'; }, 2000); }
-  const fabToast = document.getElementById('fab-toast');
-  if (fabToast) { fabToast.classList.add('show'); setTimeout(() => fabToast.classList.remove('show'), 2000); }
+  // Show toast only if not silent auto-save
+  if (!silent) {
+    const toast = document.getElementById('toast');
+    toast.textContent = 'Notes saved! ✓';
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 2000);
+    const toastTop = document.getElementById('toast-top');
+    if (toastTop) { toastTop.textContent = 'Saved! ✓'; toastTop.style.opacity = '1'; setTimeout(() => { toastTop.style.opacity = '0'; }, 2000); }
+  } else {
+    // Show subtle indicator for auto-save
+    const toastTop = document.getElementById('toast-top');
+    if (toastTop) { toastTop.textContent = 'Auto-saved'; toastTop.style.opacity = '0.6'; setTimeout(() => { toastTop.style.opacity = '0'; }, 1500); }
+  }
 
   // Sync to Google Sheet silently in background
   const cbName = 'cb_save_' + Date.now();
@@ -843,8 +822,8 @@ function saveNotes() {
 
 
 const KEYWORDS = [
-  { label: 'Normal takeoffs', terms: ['normal takeoff', 'normal t/o', 'normal to', 'nto', 'norm t/o', 'norm takeoff', 'normal t/o'] },
-  { label: 'Normal landings', terms: ['normal landing', 'normal ldg', 'nldg', 'norm ldg', 'norm landing'] },
+  { label: 'Normal takeoffs', terms: ['normal takeoff', 'normal t/o', 'normal to', 'nto', 'norm t/o', 'norm takeoff', 'takeoff', 'take off', 't/o', 'to practice takeoff', 'landing and takeoff'] },
+  { label: 'Normal landings', terms: ['normal landing', 'normal ldg', 'nldg', 'norm ldg', 'norm landing', 'landing', 'ldg', 'full stop', 'full-stop'] },
   { label: 'Straight & level / climbs / descents / turns', terms: ['straight and level', 'straight & level', 's&l', 'climb', 'descent', 'descend', 'level flight', 'turns', 'str & lvl', 'str and lvl', 'strt & lvl'] },
   { label: 'Slow flight', terms: ['slow flight', 'slow-flight', 'slowflight', 'sf'] },
   { label: 'Power-off stalls', terms: ['power off stall', 'power-off stall', 'poweroff stall', 'pos', 'pwr off stall', 'pwr-off stall', 'p/o stall', 'p-off stall', 'p off stall'] },
@@ -867,7 +846,8 @@ const KEYWORDS = [
   { label: 'Emergency descent', terms: ['emergency descent', 'rapid descent', 'emerg descent'] },
   { label: 'Solo cross-country (nearby airport)', terms: ['solo cross country', 'solo xc', 'solo cross-country', 'solo xctry'] },
   { label: 'Attitude instrument flight', terms: ['attitude instrument', 'instrument flight', 'under the hood', 'hood work', 'unusual attitude', 'instrument', 'ifr', 'basic attitude'] },
-  { label: 'VOR and GPS navigation', terms: ['vor', 'gps', 'navigation', 'nav', 'vor nav', 'gps nav'] },
+  { label: 'VOR navigation', terms: ['vor', 'vor nav', 'vor navigation', 'vor tracking', 'vor radial'] },
+  { label: 'GPS navigation', terms: ['gps', 'gps nav', 'gps navigation', 'garmin', 'gps tracking'] },
   { label: 'Dead reckoning', terms: ['dead reckoning', 'dr nav', 'ded reckoning', 'dr'] },
   { label: 'Night takeoffs & landings', terms: ['night takeoff', 'night landing', 'night t/o', 'night ldg', 'night pattern'] },
   { label: 'Night cross-country', terms: ['night cross country', 'night xc', 'night cross-country', 'night xctry'] },
@@ -911,8 +891,6 @@ function escHtml(str) {
 }
 
 function liveScan() {
-  const panelList = document.getElementById('panel-list');
-  if (!panelList.hasChildNodes()) return;
   buildSummary();
 }
 
@@ -926,8 +904,7 @@ function kwMatches(kw, noteText) {
 
 function buildSummary() {
   const btn = document.querySelector('.btn-refresh');
-  btn.classList.add('spinning');
-  setTimeout(() => btn.classList.remove('spinning'), 600);
+  if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 400); }
 
   const panelEmpty = document.getElementById('panel-empty');
   const panelList = document.getElementById('panel-list');
@@ -1010,9 +987,5 @@ document.addEventListener('keydown', e => {
 
 loadNotes();
 </script>
-<button class="fab-save" onclick="saveNotes()">
-  <span class="fab-icon">💾</span> Save notes
-</button>
-<div class="fab-toast" id="fab-toast">Notes saved! ✓</div>
 </body>
 </html>
