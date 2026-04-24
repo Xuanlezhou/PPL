@@ -186,6 +186,7 @@
     overflow: hidden;
     transition: border-color 0.2s;
   }
+  .notes-area:focus { background: #fff; }
 
   .notes-area:focus {
     outline: none;
@@ -700,17 +701,20 @@ function renderSchedule() {
         '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + '</div>' +
         '<textarea class="notes-area" id="note_' + c.key + '" placeholder="Notes…" style="flex:1;min-height:120px;resize:none;overflow:hidden;">' + (notes[c.key] || '') + '</textarea>';
       const ta = col.querySelector('textarea');
+      // Ghost text approach: mirror textarea content in a background div
       const wrap = document.createElement('div');
-      wrap.className = 'autocomplete-wrap';
-      const suggestion = document.createElement('div');
-      suggestion.className = 'autocomplete-hint';
+      wrap.style.cssText = 'position:relative;flex:1;';
+      const ghost = document.createElement('div');
+      ghost.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;padding:6px 8px;font-family:DM Sans,sans-serif;font-size:12px;font-weight:300;line-height:1.5;color:transparent;white-space:pre-wrap;word-break:break-word;pointer-events:none;border:1px solid transparent;border-radius:6px;box-sizing:border-box;overflow:hidden;';
+      wrap.appendChild(ghost);
+      ta.style.cssText += 'position:relative;z-index:1;background:transparent;';
       wrap.appendChild(ta);
-      wrap.appendChild(suggestion);
 
       ta.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = this.scrollHeight + 'px';
-        showSuggestion(this, suggestion);
+        ghost.style.height = this.style.height;
+        showSuggestion(this, ghost);
         liveScan();
         scheduleAutoSave();
       });
@@ -718,7 +722,6 @@ function renderSchedule() {
       ta.addEventListener('keydown', function(e) {
         if (e.key === 'Tab' && ta._suggestion) {
           e.preventDefault();
-          // Replace the last segment (after last newline or comma)
           const value = this.value;
           const lastDelim = Math.max(value.lastIndexOf('\n'), value.lastIndexOf(','));
           if (lastDelim === -1) {
@@ -729,7 +732,7 @@ function renderSchedule() {
             this.value = before + spacing + ta._suggestion;
           }
           ta._suggestion = null;
-          suggestion.innerHTML = '';
+          ghost.innerHTML = '';
           this.style.height = 'auto';
           this.style.height = this.scrollHeight + 'px';
           liveScan();
@@ -851,21 +854,23 @@ KEYWORDS.forEach(kw => {
   });
 });
 
-function showSuggestion(ta, suggEl) {
+function showSuggestion(ta, ghost) {
   const value = ta.value;
   const segments = value.split(/[\n,]/);
   const currentSegment = segments[segments.length - 1].toLowerCase().trim();
-  if (currentSegment.length < 2) { suggEl.textContent = ''; ta._suggestion = null; return; }
+  if (currentSegment.length < 2) { ghost.innerHTML = ''; ta._suggestion = null; return; }
 
   const match = AC_TERMS.find(t => t.term.startsWith(currentSegment) && t.term !== currentSegment);
   const labelMatch = !match && KEYWORDS.find(kw => kw.label.toLowerCase().startsWith(currentSegment) && kw.label.toLowerCase() !== currentSegment);
   const best = match ? match.term : (labelMatch ? labelMatch.label : null);
 
   if (best) {
-    suggEl.textContent = 'Tab → ' + best;
+    const rest = best.slice(currentSegment.length);
+    // Show full text in ghost: typed part transparent, suggestion in grey
+    ghost.innerHTML = escHtml(value) + '<span style="color:#B5B2AB;">' + escHtml(rest) + '</span>';
     ta._suggestion = best;
   } else {
-    suggEl.textContent = ''; ta._suggestion = null;
+    ghost.innerHTML = ''; ta._suggestion = null;
   }
 }
 
