@@ -700,7 +700,7 @@ function renderSchedule() {
     group.innerHTML = '<div class="month-title">' + label + ' <span class="month-count">' + items.length + ' class' + (items.length > 1 ? 'es' : '') + '</span></div>';
 
     const grid = document.createElement('div');
-    const cols = Math.min(items.length, 3); grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:8px;';
+    const cols = Math.min(items.length, 3); grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + cols + ',minmax(0,420px));gap:8px;';
 
     items.forEach(c => {
       const col = document.createElement('div');
