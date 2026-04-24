@@ -1,53 +1,630 @@
-const SHEET_NAME = "ClassNotes";
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Xuanle Zhou — Class Schedule</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 
-function doGet(e) {
-  const action = e.parameter.action;
-  const callback = e.parameter.callback;
-
-  if (action === 'save') {
-    const data = JSON.parse(decodeURIComponent(e.parameter.data));
-    saveData(data);
-    const result = JSON.stringify({ status: "ok" });
-    const output = callback ? callback + '(' + result + ')' : result;
-    return ContentService.createTextOutput(output)
-      .setMimeType(callback ? ContentService.MimeType.JAVASCRIPT : ContentService.MimeType.JSON);
+  :root {
+    --bg: #F7F5F0;
+    --card: #FFFFFF;
+    --accent: #C8553D;
+    --accent-light: #F5E8E4;
+    --text: #1A1A18;
+    --muted: #7A7870;
+    --border: #E2DED6;
+    --input-bg: #F7F5F0;
   }
 
-  // Load all notes
-  const data = getNotesData();
-  const result = JSON.stringify(data);
-  const output = callback ? callback + '(' + result + ')' : result;
-  return ContentService.createTextOutput(output)
-    .setMimeType(callback ? ContentService.MimeType.JAVASCRIPT : ContentService.MimeType.JSON);
-}
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
 
-function saveData(payload) {
-  const sheet = getSheet();
-  const rows = sheet.getDataRange().getValues();
-  const keyMap = {};
-  rows.forEach((row, i) => { if (row[0]) keyMap[row[0]] = i + 1; });
-  Object.entries(payload).forEach(([key, value]) => {
-    if (keyMap[key]) {
-      sheet.getRange(keyMap[key], 2).setValue(value);
-    } else {
-      sheet.appendRow([key, value]);
+  header {
+    background: var(--text);
+    color: #fff;
+    padding: 48px 40px 40px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.18;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 30%;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.10;
+  }
+
+  .header-inner { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(28px, 5vw, 42px);
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
+  header h1 span { color: var(--accent); }
+
+  .header-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 20px;
+    flex-wrap: wrap;
+  }
+
+  .badge {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    padding: 5px 14px;
+    font-size: 13px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.8);
+  }
+
+  .badge strong { color: #fff; font-weight: 500; }
+
+  main { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .month-group { margin-bottom: 40px; }
+
+  .month-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .month-count {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 100px;
+    padding: 2px 10px;
+    font-weight: 500;
+  }
+
+  .class-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 16px;
+    align-items: center;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .class-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    border-color: #ccc;
+  }
+
+  .class-card:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200, 85, 61, 0.12);
+  }
+
+  .date-info { display: flex; flex-direction: column; gap: 2px; }
+
+  .date-main {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .date-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 6px;
+    vertical-align: middle;
+    margin-bottom: 1px;
+  }
+
+  .notes-area {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13.5px;
+    font-weight: 300;
+    color: var(--text);
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 14px;
+    resize: vertical;
+    min-height: 44px;
+    line-height: 1.6;
+    transition: border-color 0.2s;
+  }
+
+  .notes-area:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  .notes-area::placeholder { color: #B5B2AB; }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-save {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: 100px;
+    padding: 11px 28px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .btn-save:hover { opacity: 0.88; }
+  .btn-save:active { transform: scale(0.97); }
+
+  .btn-print {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 11px 28px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .btn-print:hover { background: var(--border); color: var(--text); }
+
+  .saved-toast {
+    font-size: 13px;
+    color: #3A7D44;
+    background: #EAF5EC;
+    border-radius: 100px;
+    padding: 6px 16px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .saved-toast.show { opacity: 1; }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .summary-section {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 2px solid var(--text);
+  }
+  .summary-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .summary-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+  }
+  .summary-meta { font-size: 12px; color: var(--muted); }
+  .summary-empty {
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 300;
+  }
+  .summary-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+    align-items: baseline;
+  }
+  .summary-date { font-size: 13px; font-weight: 500; color: var(--text); }
+  .summary-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .summary-note-text { font-size: 13.5px; font-weight: 300; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+  .btn-summary {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 11px 28px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-summary:hover { background: var(--border); color: var(--text); }
+  .ai-summary-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+  .ai-summary-box h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    font-weight: 400;
+    margin-bottom: 12px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ai-badge {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+  .ai-summary-text {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+  .ai-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .ai-keyword {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+  .ai-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+  .ai-spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  @media (max-width: 520px) {
+    header { padding: 32px 20px 28px; }
+    main { padding: 28px 16px 60px; }
+    .class-card { grid-template-columns: 1fr; gap: 10px; }
+    .summary-row { grid-template-columns: 1fr; gap: 4px; }
+    .actions { flex-wrap: wrap; }
+  }
+
+  @media print {
+    header { background: #fff; color: #000; }
+    header h1 span { color: var(--accent); }
+    .btn-save, .btn-print, .actions { display: none; }
+    .class-card { break-inside: avoid; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <h1>Xuanle Zhou<br><span>Class Schedule</span></h1>
+    <div class="header-meta">
+      <span class="badge"><strong>21</strong> sessions booked</span>
+      <span class="badge"><strong>Apr 23</strong> — <strong>May 25, 2026</strong></span>
+    </div>
+  </div>
+</header>
+
+<main>
+  <div id="schedule"></div>
+
+  <div class="actions">
+    <button class="btn-save" onclick="saveNotes()">Save notes</button>
+    <button class="btn-summary" onclick="buildSummary()">View summary</button>
+    <button class="btn-print" onclick="window.print()">Print / PDF</button>
+    <span class="saved-toast" id="toast">Notes saved!</span>
+    <span class="saved-toast" id="load-status" style="opacity:0;"></span>
+  </div>
+
+  <div class="summary-section" id="summary-section" style="display:none;">
+    <div class="summary-header">
+      <div class="summary-title">Lesson summary</div>
+      <div class="summary-meta" id="summary-meta"></div>
+    </div>
+    <div id="summary-list"></div>
+  </div>
+</main>
+
+<footer>Xuanle Zhou · Class Schedule · Last updated <span id="today"></span></footer>
+
+<script>
+const classes = [
+  { date: "Apr 23, 2026", day: "Thursday", time: "6:00 AM",  key: "20260423_6am" },
+  { date: "Apr 23, 2026", day: "Thursday", time: "5:00 PM",  key: "20260423_5pm" },
+  { date: "Apr 26, 2026", day: "Sunday",   time: "6:00 AM",  key: "20260426" },
+  { date: "Apr 27, 2026", day: "Monday",   time: "6:00 AM",  key: "20260427" },
+  { date: "Apr 29, 2026", day: "Wednesday",time: "6:00 AM",  key: "20260429" },
+  { date: "Apr 30, 2026", day: "Thursday", time: "5:00 PM",  key: "20260430" },
+  { date: "May 1, 2026",  day: "Friday",   time: "12:00 PM", key: "20260501" },
+  { date: "May 3, 2026",  day: "Sunday",   time: "6:00 AM",  key: "20260503" },
+  { date: "May 4, 2026",  day: "Monday",   time: "6:00 AM",  key: "20260504" },
+  { date: "May 6, 2026",  day: "Wednesday",time: "6:00 AM",  key: "20260506" },
+  { date: "May 7, 2026",  day: "Thursday", time: "5:00 PM",  key: "20260507" },
+  { date: "May 10, 2026", day: "Sunday",   time: "8:00 AM",  key: "20260510" },
+  { date: "May 11, 2026", day: "Monday",   time: "6:00 AM",  key: "20260511" },
+  { date: "May 13, 2026", day: "Wednesday",time: "6:00 AM",  key: "20260513" },
+  { date: "May 14, 2026", day: "Thursday", time: "6:00 PM",  key: "20260514" },
+  { date: "May 17, 2026", day: "Sunday",   time: "8:00 AM",  key: "20260517" },
+  { date: "May 18, 2026", day: "Monday",   time: "6:00 AM",  key: "20260518" },
+  { date: "May 20, 2026", day: "Wednesday",time: "6:00 AM",  key: "20260520" },
+  { date: "May 21, 2026", day: "Thursday", time: "5:00 PM",  key: "20260521" },
+  { date: "May 24, 2026", day: "Sunday",   time: "8:00 AM",  key: "20260524" },
+  { date: "May 25, 2026", day: "Monday",   time: "6:00 AM",  key: "20260525" },
+];
+
+const BIN_ID = '69eab86536566621a8e628d6';
+const API_KEY = '$2a$10$/UgM1hn1i2qdWvClUys6u.3u4CF4Gx1G/P0DUfKDGHILryo1hP5nW';
+const BIN_URL = 'https://api.jsonbin.io/v3/b/' + BIN_ID;
+let notes = {};
+
+async function loadNotes() {
+  const status = document.getElementById('load-status');
+
+  // Show cached notes instantly from localStorage first
+  try {
+    const cached = localStorage.getItem('xz_notes_cache');
+    if (cached) {
+      notes = JSON.parse(cached);
+      classes.forEach(c => {
+        const el = document.getElementById('note_' + c.key);
+        if (el && notes[c.key]) el.value = notes[c.key];
+      });
     }
+  } catch(e) {}
+
+  // Then silently sync from JSONBin in background
+  try {
+    const res = await fetch(BIN_URL + '/latest', {
+      headers: { 'X-Master-Key': API_KEY }
+    });
+    const json = await res.json();
+    const fresh = json.record || {};
+    // Only update if different from cache
+    if (JSON.stringify(fresh) !== JSON.stringify(notes)) {
+      notes = fresh;
+      classes.forEach(c => {
+        const el = document.getElementById('note_' + c.key);
+        if (el && notes[c.key]) el.value = notes[c.key];
+      });
+      localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
+    }
+    status.textContent = 'Synced ✓';
+    status.style.opacity = '1';
+    setTimeout(() => { status.style.opacity = '0'; }, 2000);
+  } catch(e) {
+    // Fail silently - cached notes still show
+  }
+}
+
+function groupByMonth(arr) {
+  const groups = {};
+  arr.forEach(c => {
+    const m = c.date.split(' ')[0] + ' ' + c.date.split(' ')[2];
+    if (!groups[m]) groups[m] = [];
+    groups[m].push(c);
   });
+  return groups;
 }
 
-function getNotesData() {
-  const sheet = getSheet();
-  const data = {};
-  const rows = sheet.getDataRange().getValues();
-  rows.forEach(row => { if (row[0]) data[row[0]] = row[1]; });
-  return data;
+const groups = groupByMonth(classes);
+const container = document.getElementById('schedule');
+
+Object.entries(groups).forEach(([month, items]) => {
+  const group = document.createElement('div');
+  group.className = 'month-group';
+  group.innerHTML = `<div class="month-title">${month} <span class="month-count">${items.length} class${items.length > 1 ? 'es' : ''}</span></div>`;
+
+  items.forEach(c => {
+    const card = document.createElement('div');
+    card.className = 'class-card';
+    card.innerHTML = `
+      <div class="date-info">
+        <div class="date-main"><span class="dot"></span>${c.date}</div>
+        <div class="date-sub">${c.day} · ${c.time}</div>
+      </div>
+      <textarea class="notes-area" id="note_${c.key}" placeholder="Lesson plan / goals for this class…" rows="2">${notes[c.key] || ''}</textarea>`;
+    group.appendChild(card);
+  });
+
+  container.appendChild(group);
+});
+
+loadNotes();
+document.getElementById('today').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+async function saveNotes() {
+  classes.forEach(c => {
+    const el = document.getElementById('note_' + c.key);
+    if (el) notes[c.key] = el.value;
+  });
+  const toast = document.getElementById('toast');
+  toast.textContent = 'Saving…';
+  toast.classList.add('show');
+  try {
+    const res = await fetch(BIN_URL, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': API_KEY
+      },
+      body: JSON.stringify(notes)
+    });
+    if (!res.ok) throw new Error('Save failed');
+    localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
+    toast.textContent = 'Notes saved! ✓';
+    setTimeout(() => { toast.classList.remove('show'); toast.textContent = 'Notes saved!'; }, 2500);
+  } catch(e) {
+    toast.textContent = 'Save failed — check connection';
+    setTimeout(() => { toast.classList.remove('show'); toast.textContent = 'Notes saved!'; }, 3000);
+  }
 }
 
-function getSheet() {
-  let ss;
-  try { ss = SpreadsheetApp.getActiveSpreadsheet(); } catch(e) {}
-  if (!ss) ss = SpreadsheetApp.create("XuanleZhouSchedule");
-  let sheet = ss.getSheetByName(SHEET_NAME);
-  if (!sheet) sheet = ss.insertSheet(SHEET_NAME);
-  return sheet;
+
+async function buildSummary() {
+  saveNotes();
+  const section = document.getElementById('summary-section');
+  const list = document.getElementById('summary-list');
+  const meta = document.getElementById('summary-meta');
+  const filled = classes.filter(c => notes[c.key] && notes[c.key].trim() !== '');
+  section.style.display = 'block';
+  list.innerHTML = '';
+
+  if (filled.length === 0) {
+    list.innerHTML = '<div class="summary-empty">No lesson notes yet. Ask your instructor to fill in the boxes above!</div>';
+    meta.textContent = '';
+    section.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    return;
+  }
+
+  meta.textContent = filled.length + ' of ' + classes.length + ' classes have notes';
+
+  // Extract keywords from notes
+  const stopWords = new Set(['the','a','an','and','or','but','in','on','at','to','for','of','with','is','was','are','were','be','been','have','has','had','do','did','will','would','can','could','should','i','we','you','he','she','they','it','this','that','from','as','by','about','into','during','after','before','so','what','how','when','if','up','out','then','also','just','each','class','today','worked','went','did','got','felt','felt','felt','session','time','next']);
+  const wordCount = {};
+  filled.forEach(c => {
+    const words = (notes[c.key] || '').toLowerCase().replace(/[^a-z0-9\s]/g, ' ').split(/\s+/);
+    words.forEach(w => {
+      if (w.length > 3 && !stopWords.has(w)) {
+        wordCount[w] = (wordCount[w] || 0) + 1;
+      }
+    });
+  });
+  const keywords = Object.entries(wordCount)
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 12)
+    .map(e => e[0]);
+
+  // Stats
+  const totalNotes = filled.length;
+  const allText = filled.map(c => notes[c.key]).join(' ');
+  const wordTotal = allText.trim().split(/\s+/).length;
+
+  // Build AI-style summary box
+  const aiBox = document.createElement('div');
+  aiBox.className = 'ai-summary-box';
+  aiBox.innerHTML = `
+    <h3>Progress Overview <span class="ai-badge">Auto Summary</span></h3>
+    <div class="ai-summary-text">Xuanle has completed <strong>${totalNotes}</strong> documented sessions out of ${classes.length} total classes, with instructors logging ${wordTotal} words of lesson notes across the training period.</div>
+    ${keywords.length > 0 ? '<div class="ai-keywords">' + keywords.map(k => '<span class="ai-keyword">' + k + '</span>').join('') + '</div>' : ''}
+  `;
+  list.appendChild(aiBox);
+
+  // Individual notes
+  filled.forEach(c => {
+    const row = document.createElement('div');
+    row.className = 'summary-row';
+    const noteText = (notes[c.key] || '').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+    row.innerHTML = '<div><div class="summary-date"><span class="dot"></span>' + c.date + '</div><div class="summary-time">' + c.day + ' · ' + c.time + '</div></div><div class="summary-note-text">' + noteText + '</div>';
+    list.appendChild(row);
+  });
+
+  section.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
+
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveNotes(); }
+});
+</script>
+</body>
+</html>
