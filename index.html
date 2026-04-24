@@ -173,7 +173,7 @@
   .notes-area {
     width: 100%;
     font-family: 'DM Sans', sans-serif;
-    font-size: 13.5px;
+    font-size: 12px;
     font-weight: 300;
     color: var(--text);
     background: var(--input-bg);
@@ -298,7 +298,7 @@
   }
   .summary-date { font-size: 13px; font-weight: 500; color: var(--text); }
   .summary-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
-  .summary-note-text { font-size: 13.5px; font-weight: 300; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+  .summary-note-text { font-size: 12px; font-weight: 300; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
   .btn-summary {
     font-family: 'DM Sans', sans-serif;
     font-size: 14px;
@@ -522,10 +522,18 @@
 
 <header>
   <div class="header-inner">
-    <h1>Xuanle<br><span>Class Schedule</span></h1>
-    <div class="header-meta">
-      <span class="badge"><strong>21</strong> sessions booked</span>
-      <span class="badge"><strong>Apr 23</strong> — <strong>May 25, 2026</strong></span>
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
+      <div>
+        <h1>Xuanle<br><span>Class Schedule</span></h1>
+        <div class="header-meta">
+          <span class="badge"><strong>21</strong> sessions booked</span>
+          <span class="badge"><strong>Apr 23</strong> — <strong>May 25, 2026</strong></span>
+        </div>
+      </div>
+      <div style="display:flex;align-items:center;gap:10px;padding-top:8px;">
+        <button onclick="saveNotes()" style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:#fff;background:var(--accent);border:none;border-radius:100px;padding:10px 24px;cursor:pointer;opacity:1;transition:opacity 0.2s;">Save notes</button>
+        <span class="saved-toast" id="toast-top" style="color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.15);opacity:0;"></span>
+      </div>
     </div>
   </div>
 </header>
@@ -637,14 +645,14 @@ function renderSchedule() {
     group.innerHTML = '<div class="month-title">' + label + ' <span class="month-count">' + items.length + ' class' + (items.length > 1 ? 'es' : '') + '</span></div>';
 
     const grid = document.createElement('div');
-    grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + items.length + ',1fr);gap:10px;';
+    const cols = Math.min(items.length, 3); grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:10px;';
 
     items.forEach(c => {
       const col = document.createElement('div');
       col.style.cssText = 'background:#fff;border:1px solid var(--border);border-radius:14px;padding:14px 16px;display:flex;flex-direction:column;gap:8px;';
       col.innerHTML =
-        '<div style="font-size:13px;font-weight:500;color:var(--text)"><span class="dot"></span>' + c.date + '</div>' +
-        '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + '</div>' +
+        '<div style="font-size:11px;font-weight:500;color:var(--text)"><span class="dot"></span>' + c.date + '</div>' +
+        '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + '</div>' +
         '<textarea class="notes-area" id="note_' + c.key + '" placeholder="Notes…" style="flex:1;min-height:100px;resize:none;overflow:hidden;">' + (notes[c.key] || '') + '</textarea>';
       const ta = col.querySelector('textarea');
       ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
@@ -693,6 +701,8 @@ function saveNotes() {
   toast.textContent = 'Notes saved! ✓';
   toast.classList.add('show');
   setTimeout(() => { toast.classList.remove('show'); }, 2000);
+  const toastTop = document.getElementById('toast-top');
+  if (toastTop) { toastTop.textContent = 'Saved! ✓'; toastTop.style.opacity = '1'; setTimeout(() => { toastTop.style.opacity = '0'; }, 2000); }
 
   // Sync to Google Sheet silently in background
   const cbName = 'cb_save_' + Date.now();
