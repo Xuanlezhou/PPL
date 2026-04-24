@@ -481,11 +481,19 @@ function loadNotes() {
     script.remove();
   };
   script.onerror = function() {
-    // Fall back to cache if Google fails
     renderSchedule();
     status.textContent = 'Loaded from cache';
     setTimeout(() => { status.style.opacity = '0'; }, 2000);
   };
+  // Fallback: if Google takes too long, render with cache
+  setTimeout(() => {
+    if (window[cbName]) {
+      delete window[cbName];
+      renderSchedule();
+      status.textContent = 'Loaded from cache';
+      setTimeout(() => { status.style.opacity = '0'; }, 2000);
+    }
+  }, 5000);
   script.src = SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
   document.head.appendChild(script);
 }
@@ -520,8 +528,6 @@ function groupByMonth(arr) {
   });
   return groups;
 }
-
-loadNotes();
 
 function saveNotes() {
   classes.forEach(c => {
@@ -614,6 +620,8 @@ function buildSummary() {
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveNotes(); }
 });
+
+loadNotes();
 </script>
 </body>
 </html>
