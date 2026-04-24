@@ -517,26 +517,16 @@
   }
 
   .autocomplete-wrap { position: relative; flex: 1; }
-  .autocomplete-suggestion {
-    position: absolute;
-    top: 0; left: 0;
-    width: 100%;
-    padding: 6px 8px;
-    font-family: 'DM Sans', sans-serif;
-    font-size: 12px;
-    font-weight: 300;
-    color: transparent;
-    pointer-events: none;
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    line-height: 1.5;
-    border: 1px solid transparent;
-    border-radius: 6px;
-    box-sizing: border-box;
-    overflow: hidden;
-  }
-  .autocomplete-suggestion span {
+  .autocomplete-hint {
+    font-size: 11px;
     color: #B5B2AB;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    padding: 2px 2px 0;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
 
@@ -700,7 +690,7 @@ function renderSchedule() {
     group.innerHTML = '<div class="month-title">' + label + ' <span class="month-count">' + items.length + ' class' + (items.length > 1 ? 'es' : '') + '</span></div>';
 
     const grid = document.createElement('div');
-    const cols = Math.min(items.length, 3); grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + cols + ',minmax(0,420px));gap:8px;';
+    const cols = Math.min(items.length, 3); grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:8px;';
 
     items.forEach(c => {
       const col = document.createElement('div');
@@ -713,14 +703,13 @@ function renderSchedule() {
       const wrap = document.createElement('div');
       wrap.className = 'autocomplete-wrap';
       const suggestion = document.createElement('div');
-      suggestion.className = 'autocomplete-suggestion';
+      suggestion.className = 'autocomplete-hint';
       wrap.appendChild(ta);
       wrap.appendChild(suggestion);
 
       ta.addEventListener('input', function() {
         this.style.height = 'auto';
         this.style.height = this.scrollHeight + 'px';
-        suggestion.style.height = this.style.height;
         showSuggestion(this, suggestion);
         liveScan();
         scheduleAutoSave();
@@ -866,19 +855,17 @@ function showSuggestion(ta, suggEl) {
   const value = ta.value;
   const segments = value.split(/[\n,]/);
   const currentSegment = segments[segments.length - 1].toLowerCase().trim();
-  if (currentSegment.length < 2) { suggEl.innerHTML = ''; ta._suggestion = null; return; }
+  if (currentSegment.length < 2) { suggEl.textContent = ''; ta._suggestion = null; return; }
 
   const match = AC_TERMS.find(t => t.term.startsWith(currentSegment) && t.term !== currentSegment);
   const labelMatch = !match && KEYWORDS.find(kw => kw.label.toLowerCase().startsWith(currentSegment) && kw.label.toLowerCase() !== currentSegment);
   const best = match ? match.term : (labelMatch ? labelMatch.label : null);
 
   if (best) {
-    const rest = best.slice(currentSegment.length);
-    // Only show ghost text appended to cursor position — no mirroring of full text
-    suggEl.innerHTML = escHtml(value) + '<span style="color:#B5B2AB;">' + escHtml(rest) + '</span>';
+    suggEl.textContent = 'Tab → ' + best;
     ta._suggestion = best;
   } else {
-    suggEl.innerHTML = ''; ta._suggestion = null;
+    suggEl.textContent = ''; ta._suggestion = null;
   }
 }
 
