@@ -180,9 +180,10 @@
     border: 1px solid var(--border);
     border-radius: 8px;
     padding: 10px 14px;
-    resize: vertical;
+    resize: none;
     min-height: 44px;
     line-height: 1.6;
+    overflow: hidden;
     transition: border-color 0.2s;
   }
 
@@ -379,29 +380,26 @@
 
   .page-layout {
     display: flex;
-    align-items: flex-start;
-    max-width: 1100px;
-    margin: 0 auto;
+    align-items: stretch;
+    width: 100%;
     gap: 0;
   }
 
   main {
     flex: 1;
     min-width: 0;
-    max-width: 760px;
-    padding: 40px 24px 80px;
+    padding: 40px 40px 80px;
   }
 
   .summary-panel {
-    width: 260px;
+    width: 320px;
     flex-shrink: 0;
     background: var(--card);
     border-left: 1px solid var(--border);
-    min-height: calc(100vh - 160px);
     padding: 24px 20px;
     position: sticky;
     top: 0;
-    max-height: 100vh;
+    height: 100vh;
     overflow-y: auto;
   }
 
@@ -647,7 +645,10 @@ function renderSchedule() {
       col.innerHTML =
         '<div style="font-size:13px;font-weight:500;color:var(--text)"><span class="dot"></span>' + c.date + '</div>' +
         '<div style="font-size:11px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + '</div>' +
-        '<textarea class="notes-area" id="note_' + c.key + '" placeholder="Notes…" style="flex:1;min-height:100px;">' + (notes[c.key] || '') + '</textarea>';
+        '<textarea class="notes-area" id="note_' + c.key + '" placeholder="Notes…" style="flex:1;min-height:100px;resize:none;overflow:hidden;">' + (notes[c.key] || '') + '</textarea>';
+      const ta = col.querySelector('textarea');
+      ta.addEventListener('input', function() { this.style.height = 'auto'; this.style.height = this.scrollHeight + 'px'; });
+      setTimeout(() => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }, 0);
       grid.appendChild(col);
     });
 
