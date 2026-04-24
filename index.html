@@ -496,6 +496,26 @@
     color: #2A6B35;
   }
 
+  .panel-item.planned {
+    background: #EEF4FF;
+    color: #1A3A7A;
+  }
+
+  .panel-count.planned-count {
+    background: #C8D8F5;
+    color: #1A3A7A;
+  }
+
+  .panel-item.planned {
+    background: #EEF4FF;
+    color: #2A4A8A;
+  }
+
+  .panel-count.planned-count {
+    background: #C8D8F5;
+    color: #2A4A8A;
+  }
+
   .autocomplete-wrap { position: relative; flex: 1; }
   .autocomplete-suggestion {
     position: absolute;
@@ -843,54 +863,16 @@ function escHtml(str) {
 }
 
 function liveScan() {
-  const allNotes = classes.map(c => {
-    const el = document.getElementById('note_' + c.key);
-    return el ? el.value : (notes[c.key] || '');
-  }).join(' ').toLowerCase();
-
-  if (!allNotes.trim()) return;
-
-  const panelEmpty = document.getElementById('panel-empty');
   const panelList = document.getElementById('panel-list');
-  if (!panelList.hasChildNodes() && panelEmpty.style.display !== 'none') return;
   if (!panelList.hasChildNodes()) return;
+  buildSummary();
+}
 
-  // Re-score all items live
-  const items = panelList.querySelectorAll('.panel-item');
-  items.forEach(item => {
-    const label = item.querySelector('.panel-item-label').textContent;
-    const kw = KEYWORDS.find(k => k.label === label);
-    if (!kw) return;
-
-    // Count per class note, not per term occurrence
-    let count = 0;
-    classes.forEach(c => {
-      const el = document.getElementById('note_' + c.key);
-      const noteText = (el ? el.value : (notes[c.key] || '')).toLowerCase();
-      if (!noteText.trim()) return;
-      const mentioned = kw.terms.some(term => {
-        const base = term.replace(/s$/, '');
-        const regex = new RegExp('\\b' + base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 's?\\b', 'i');
-        return regex.test(noteText);
-      });
-      if (mentioned) count++;
-    });
-
-    const countEl = item.querySelector('.panel-count');
-    if (count > 0) {
-      item.classList.add('done');
-      if (!countEl) {
-        const span = document.createElement('span');
-        span.className = 'panel-count';
-        span.textContent = count + 'x';
-        item.appendChild(span);
-      } else {
-        countEl.textContent = count + 'x';
-      }
-    } else {
-      item.classList.remove('done');
-      if (countEl) countEl.remove();
-    }
+function kwMatches(kw, noteText) {
+  return kw.terms.some(term => {
+    const base = term.replace(/s$/, '');
+    const regex = new RegExp('\\b' + base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 's?\\b', 'i');
+    return regex.test(noteText);
   });
 }
 
@@ -902,64 +884,61 @@ function buildSummary() {
   const panelEmpty = document.getElementById('panel-empty');
   const panelList = document.getElementById('panel-list');
   panelList.innerHTML = '';
-
-  const allNotes = Object.values(notes).join(' ').toLowerCase();
-
-  if (!allNotes.trim()) {
-    panelEmpty.style.display = 'block';
-    panelEmpty.textContent = 'No notes yet — fill in some lessons first!';
-    return;
-  }
-
   panelEmpty.style.display = 'none';
 
-  const found = [];
-  const notFound = [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const pastClasses = classes.filter(c => new Date(c.date) < today);
+  const futureClasses = classes.filter(c => new Date(c.date) >= today);
+
+  const practiced = [];
+  const toPractice = [];
+  const notYet = [];
 
   KEYWORDS.forEach(kw => {
-    // Count how many individual class notes mention this keyword (not total term hits)
-    let count = 0;
-    classes.forEach(c => {
+    const practicedCount = pastClasses.filter(c => {
       const noteText = (notes[c.key] || '').toLowerCase();
-      if (!noteText.trim()) return;
-        const mentioned = kw.terms.some(term => {
-        // Strip trailing s for plural matching
-        const base = term.replace(/s$/, '');
-        const regex = new RegExp('\\b' + base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 's?\\b', 'i');
-        return regex.test(noteText);
-      });
-      if (mentioned) count++;
-    });
-    if (count > 0) found.push({ label: kw.label, count });
-    else notFound.push({ label: kw.label });
+      return noteText.trim() && kwMatches(kw, noteText);
+    }).length;
+
+    const plannedCount = futureClasses.filter(c => {
+      const el = document.getElementById('note_' + c.key);
+      const noteText = (el ? el.value : (notes[c.key] || '')).toLowerCase();
+      return noteText.trim() && kwMatches(kw, noteText);
+    }).length;
+
+    if (practicedCount > 0) {
+      practiced.push({ label: kw.label, count: practicedCount });
+    } else if (plannedCount > 0) {
+      toPractice.push({ label: kw.label, count: plannedCount });
+    } else {
+      notYet.push({ label: kw.label });
+    }
   });
 
-  // Practiced section
-  if (found.length > 0) {
+  const makeSection = (title, items, itemClass, countClass) => {
+    if (items.length === 0) return;
     const sec = document.createElement('div');
     sec.className = 'panel-section';
-    sec.innerHTML = '<div class="panel-section-title">Practiced (' + found.length + ')</div>';
-    found.sort((a, b) => b.count - a.count).forEach(item => {
+    sec.innerHTML = '<div class="panel-section-title">' + title + ' (' + items.length + ')</div>';
+    items.forEach(item => {
       const el = document.createElement('div');
-      el.className = 'panel-item done';
-      el.innerHTML = '<span class="panel-item-label">' + item.label + '</span><span class="panel-count">' + item.count + 'x</span>';
+      el.className = 'panel-item ' + itemClass;
+      el.innerHTML = '<span class="panel-item-label">' + item.label + '</span>' +
+        (item.count ? '<span class="panel-count ' + countClass + '">' + item.count + 'x</span>' : '');
       sec.appendChild(el);
     });
     panelList.appendChild(sec);
-  }
+  };
 
-  // Not yet section
-  if (notFound.length > 0) {
-    const sec = document.createElement('div');
-    sec.className = 'panel-section';
-    sec.innerHTML = '<div class="panel-section-title">Not yet (' + notFound.length + ')</div>';
-    notFound.forEach(item => {
-      const el = document.createElement('div');
-      el.className = 'panel-item';
-      el.innerHTML = '<span class="panel-item-label">' + item.label + '</span>';
-      sec.appendChild(el);
-    });
-    panelList.appendChild(sec);
+  makeSection('Practiced', practiced.sort((a,b) => b.count - a.count), 'done', '');
+  makeSection('To practice', toPractice, 'planned', 'planned-count');
+  makeSection('Not yet', notYet, '', '');
+
+  if (practiced.length === 0 && toPractice.length === 0 && notYet.length === 30) {
+    panelEmpty.style.display = 'block';
+    panelEmpty.textContent = 'No notes yet — fill in some lessons first!';
   }
 }
 
