@@ -521,7 +521,7 @@
     position: absolute;
     top: 0; left: 0;
     width: 100%;
-    padding: 10px 14px;
+    padding: 6px 8px;
     font-family: 'DM Sans', sans-serif;
     font-size: 12px;
     font-weight: 300;
@@ -529,15 +529,61 @@
     pointer-events: none;
     white-space: pre-wrap;
     word-wrap: break-word;
-    line-height: 1.6;
+    line-height: 1.5;
     border: 1px solid transparent;
-    border-radius: 8px;
+    border-radius: 6px;
     box-sizing: border-box;
     overflow: hidden;
   }
   .autocomplete-suggestion span {
     color: #B5B2AB;
   }
+
+  .fab-save {
+    position: fixed;
+    bottom: 32px;
+    right: 32px;
+    z-index: 999;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 100px;
+    padding: 14px 28px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    box-shadow: 0 4px 20px rgba(200,85,61,0.4);
+    transition: opacity 0.2s, transform 0.15s, box-shadow 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .fab-save:hover {
+    opacity: 0.92;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 24px rgba(200,85,61,0.5);
+  }
+  .fab-save:active { transform: scale(0.96); }
+  .fab-save .fab-icon { font-size: 15px; }
+  .fab-toast {
+    position: fixed;
+    bottom: 90px;
+    right: 32px;
+    z-index: 999;
+    background: var(--text);
+    color: #fff;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 13px;
+    font-weight: 300;
+    padding: 8px 18px;
+    border-radius: 100px;
+    opacity: 0;
+    transform: translateY(6px);
+    transition: opacity 0.25s, transform 0.25s;
+    pointer-events: none;
+  }
+  .fab-toast.show { opacity: 1; transform: translateY(0); }
 
   @media (max-width: 860px) {
     .page-layout { flex-direction: column; }
@@ -782,6 +828,8 @@ function saveNotes() {
   setTimeout(() => { toast.classList.remove('show'); }, 2000);
   const toastTop = document.getElementById('toast-top');
   if (toastTop) { toastTop.textContent = 'Saved! ✓'; toastTop.style.opacity = '1'; setTimeout(() => { toastTop.style.opacity = '0'; }, 2000); }
+  const fabToast = document.getElementById('fab-toast');
+  if (fabToast) { fabToast.classList.add('show'); setTimeout(() => fabToast.classList.remove('show'), 2000); }
 
   // Sync to Google Sheet silently in background
   const cbName = 'cb_save_' + Date.now();
@@ -888,15 +936,22 @@ function buildSummary() {
 
   const now = new Date();
 
-  // A class is "past" if its date + time is before right now (real time!)
-  const pastClasses = classes.filter(c => {
-    const classDateTime = new Date(c.date + ' ' + c.time);
-    return classDateTime <= now;
-  });
-  const futureClasses = classes.filter(c => {
-    const classDateTime = new Date(c.date + ' ' + c.time);
-    return classDateTime > now;
-  });
+  // Parse class date+time and compare to right now
+  function parseClassTime(c) {
+    const parts = c.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+    if (!parts) return new Date(c.date);
+    let hours = parseInt(parts[1]);
+    const mins = parseInt(parts[2]);
+    const ampm = parts[3].toUpperCase();
+    if (ampm === 'PM' && hours !== 12) hours += 12;
+    if (ampm === 'AM' && hours === 12) hours = 0;
+    const d = new Date(c.date);
+    d.setHours(hours, mins, 0, 0);
+    return d;
+  }
+
+  const pastClasses = classes.filter(c => parseClassTime(c) <= now);
+  const futureClasses = classes.filter(c => parseClassTime(c) > now);
 
   const practiced = [];
   const toPractice = [];
@@ -955,5 +1010,9 @@ document.addEventListener('keydown', e => {
 
 loadNotes();
 </script>
+<button class="fab-save" onclick="saveNotes()">
+  <span class="fab-icon">💾</span> Save notes
+</button>
+<div class="fab-toast" id="fab-toast">Notes saved! ✓</div>
 </body>
 </html>
