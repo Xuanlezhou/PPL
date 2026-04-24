@@ -30,7 +30,7 @@
   header {
     background: var(--text);
     color: #fff;
-    padding: 28px 32px 24px;
+    padding: 14px 24px 14px;
     position: relative;
     overflow: hidden;
   }
@@ -59,7 +59,7 @@
 
   header h1 {
     font-family: 'DM Serif Display', serif;
-    font-size: clamp(28px, 5vw, 42px);
+    font-size: clamp(18px, 3vw, 26px);
     font-weight: 400;
     letter-spacing: -0.5px;
     line-height: 1.1;
@@ -71,7 +71,7 @@
   .header-meta {
     display: flex;
     gap: 24px;
-    margin-top: 20px;
+    margin-top: 8px;
     flex-wrap: wrap;
   }
 
@@ -79,8 +79,8 @@
     background: rgba(255,255,255,0.1);
     border: 1px solid rgba(255,255,255,0.15);
     border-radius: 100px;
-    padding: 5px 14px;
-    font-size: 13px;
+    padding: 3px 10px;
+    font-size: 11px;
     font-weight: 300;
     color: rgba(255,255,255,0.8);
   }
@@ -864,22 +864,18 @@ KEYWORDS.forEach(kw => {
 
 function showSuggestion(ta, suggEl) {
   const value = ta.value;
-  // Get the current word/phrase being typed — split by newline AND comma
   const segments = value.split(/[\n,]/);
   const currentSegment = segments[segments.length - 1].toLowerCase().trim();
   if (currentSegment.length < 2) { suggEl.innerHTML = ''; ta._suggestion = null; return; }
 
-  // Try matching against terms first, then labels
   const match = AC_TERMS.find(t => t.term.startsWith(currentSegment) && t.term !== currentSegment);
   const labelMatch = !match && KEYWORDS.find(kw => kw.label.toLowerCase().startsWith(currentSegment) && kw.label.toLowerCase() !== currentSegment);
   const best = match ? match.term : (labelMatch ? labelMatch.label : null);
 
   if (best) {
     const rest = best.slice(currentSegment.length);
-    // Rebuild display: everything before current segment + current segment + ghost
-    const beforeSegment = value.slice(0, value.length - segments[segments.length-1].length);
-    const typedPart = segments[segments.length - 1]; // preserve original casing/spacing
-    suggEl.innerHTML = escHtml(beforeSegment) + escHtml(typedPart) + '<span>' + escHtml(rest) + '</span>';
+    // Only show ghost text appended to cursor position — no mirroring of full text
+    suggEl.innerHTML = escHtml(value) + '<span style="color:#B5B2AB;">' + escHtml(rest) + '</span>';
     ta._suggestion = best;
   } else {
     suggEl.innerHTML = ''; ta._suggestion = null;
