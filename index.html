@@ -457,39 +457,58 @@ let notes = {};
 
 function loadNotes() {
   const status = document.getElementById('load-status');
+  status.textContent = 'Loading…';
+  status.style.opacity = '1';
 
-  // Show cached notes instantly
+  // Load from cache instantly while waiting for Google
   try {
     const cached = localStorage.getItem('xz_notes_cache');
     if (cached) {
       notes = JSON.parse(cached);
-      classes.forEach(c => {
-        const el = document.getElementById('note_' + c.key);
-        if (el && notes[c.key]) el.value = notes[c.key];
-      });
     }
   } catch(e) {}
 
-  // Sync in background via JSONP
+  // Always fetch fresh from Google, then re-render
   const cbName = 'cb_load_' + Date.now();
   const script = document.createElement('script');
   window[cbName] = function(fresh) {
-    if (JSON.stringify(fresh) !== JSON.stringify(notes)) {
-      notes = fresh;
-      classes.forEach(c => {
-        const el = document.getElementById('note_' + c.key);
-        if (el && notes[c.key]) el.value = notes[c.key];
-      });
-      localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
-    }
+    notes = fresh;
+    localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
+    renderSchedule();
     status.textContent = 'Synced ✓';
-    status.style.opacity = '1';
     setTimeout(() => { status.style.opacity = '0'; }, 2000);
     delete window[cbName];
     script.remove();
   };
+  script.onerror = function() {
+    // Fall back to cache if Google fails
+    renderSchedule();
+    status.textContent = 'Loaded from cache';
+    setTimeout(() => { status.style.opacity = '0'; }, 2000);
+  };
   script.src = SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
   document.head.appendChild(script);
+}
+
+document.getElementById('today').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+
+// Load from Google first, then render
+function renderSchedule() {
+  const groups = groupByMonth(classes);
+  const container = document.getElementById('schedule');
+  container.innerHTML = '';
+  Object.entries(groups).forEach(([month, items]) => {
+    const group = document.createElement('div');
+    group.className = 'month-group';
+    group.innerHTML = '<div class="month-title">' + month + ' <span class="month-count">' + items.length + ' class' + (items.length > 1 ? 'es' : '') + '</span></div>';
+    items.forEach(c => {
+      const card = document.createElement('div');
+      card.className = 'class-card';
+      card.innerHTML = '<div class="date-info"><div class="date-main"><span class="dot"></span>' + c.date + '</div><div class="date-sub">' + c.day + ' · ' + c.time + '</div></div><textarea class="notes-area" id="note_' + c.key + '" placeholder="Lesson plan / goals for this class…" rows="2">' + (notes[c.key] || '') + '</textarea>';
+      group.appendChild(card);
+    });
+    container.appendChild(group);
+  });
 }
 
 function groupByMonth(arr) {
@@ -502,31 +521,7 @@ function groupByMonth(arr) {
   return groups;
 }
 
-const groups = groupByMonth(classes);
-const container = document.getElementById('schedule');
-
-Object.entries(groups).forEach(([month, items]) => {
-  const group = document.createElement('div');
-  group.className = 'month-group';
-  group.innerHTML = `<div class="month-title">${month} <span class="month-count">${items.length} class${items.length > 1 ? 'es' : ''}</span></div>`;
-
-  items.forEach(c => {
-    const card = document.createElement('div');
-    card.className = 'class-card';
-    card.innerHTML = `
-      <div class="date-info">
-        <div class="date-main"><span class="dot"></span>${c.date}</div>
-        <div class="date-sub">${c.day} · ${c.time}</div>
-      </div>
-      <textarea class="notes-area" id="note_${c.key}" placeholder="Lesson plan / goals for this class…" rows="2">${notes[c.key] || ''}</textarea>`;
-    group.appendChild(card);
-  });
-
-  container.appendChild(group);
-});
-
 loadNotes();
-document.getElementById('today').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
 
 function saveNotes() {
   classes.forEach(c => {
