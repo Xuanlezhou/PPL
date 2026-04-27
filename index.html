@@ -562,7 +562,7 @@
       <div>
         <h1>Xuanle<br><span>Class Schedule Plan</span></h1>
         <div class="header-meta">
-          <span class="badge"><strong>22</strong> sessions booked</span>
+          <span class="badge"><strong>29</strong> sessions booked</span>
           <span class="badge"><strong>Apr 23</strong> — <strong>May 31, 2026</strong></span>
           <span class="badge">✈ <strong>N349ME</strong> · <strong>N445AF</strong></span>
           <span class="badge">Updated <strong id="last-updated">—</strong></span>
@@ -604,13 +604,20 @@ const classes = [
   { date: "Apr 23, 2026", day: "Thursday",  time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260423_6am" },
   { date: "Apr 23, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260423_5pm" },
   { date: "Apr 26, 2026", day: "Sunday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260426" },
+  { date: "Apr 26, 2026", day: "Sunday",    time: "2:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260426_2pm" },
   { date: "Apr 27, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260427" },
   { date: "Apr 29, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260429" },
+  { date: "Apr 29, 2026", day: "Wednesday", time: "6:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260429_6pm" },
+  { date: "Apr 30, 2026", day: "Thursday",  time: "8:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260430_8am" },
   { date: "Apr 30, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260430" },
   { date: "May 1, 2026",  day: "Friday",    time: "12:00 PM", duration: "2h", aircraft: "N349ME", key: "20260501" },
   { date: "May 3, 2026",  day: "Sunday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260503" },
   { date: "May 4, 2026",  day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260504" },
+  { date: "May 4, 2026",  day: "Monday",    time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260504_5pm" },
+  { date: "May 5, 2026",  day: "Tuesday",   time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260505" },
   { date: "May 6, 2026",  day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260506" },
+  { date: "May 6, 2026",  day: "Wednesday", time: "9:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260506_9am" },
+  { date: "May 7, 2026",  day: "Thursday",  time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260507_7am" },
   { date: "May 7, 2026",  day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260507" },
   { date: "May 10, 2026", day: "Sunday",    time: "8:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260510" },
   { date: "May 11, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260511" },
@@ -620,7 +627,7 @@ const classes = [
   { date: "May 18, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260518" },
   { date: "May 20, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260520" },
   { date: "May 21, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260521" },
-  { date: "May 24, 2026", day: "Sunday",    time: "7:00 AM",  duration: "4h", aircraft: "N445AF", key: "20260524" },
+  { date: "May 24, 2026", day: "Sunday",    time: "7:00 AM",  duration: "4h", aircraft: "N349ME", key: "20260524" },
   { date: "May 25, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260525" },
   { date: "May 31, 2026", day: "Sunday",    time: "7:00 AM",  duration: "4h", aircraft: "N445AF", key: "20260531" },
 ];
@@ -824,7 +831,7 @@ const KEYWORDS = [
   { label: 'Power-on stalls', terms: ['power on stall', 'power-on stall', 'poweron stall', 'pons', 'pwr on stall', 'pwr-on stall', 'p/on stall', 'p-on stall', 'p on stall'] },
   { label: 'Steep turns', terms: ['steep turn', 'steep turns', '45 degree', '45°', '45 bank', 'steep'] },
   { label: 'Traffic pattern operations', terms: ['traffic pattern', 'pattern work', 'pattern ops', 'touch and go', 'touch & go', 't&g', 'tng', 'touch-and-go', 'pattern', 't/g', 'tch & go'] },
-  { label: 'Touch-and-go Landing', terms: ['touch and go', 'touch & go', 't&g', 'tng', 'touch-and-go', 't/g', 'touch and goes', 'tch & go', 'tag'] },
+  { label: 'Touch and goes', terms: ['touch and go', 'touch & go', 't&g', 'tng', 'touch-and-go', 't/g', 'touch and goes', 'tch & go', 'tag'] },
   { label: 'Rectangular course', terms: ['rectangular course', 'rectangular', 'rect course', 'rect', 'ground ref rectangular', 'ground reference rectangular', 'rectangular pattern', 'rect pattern', 'ground ref rect'] },
   { label: 'S-turns', terms: ['s-turn', 's turn', 's turns', 's-turns', 's turns across', 's-turns across'] },
   { label: 'Turns around a point', terms: ['turns around a point', 'turn around a point', 'tap', 'around a point', 'turns around a pt', 'turn around a pt', 'around a pt'] },
