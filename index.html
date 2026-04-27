@@ -620,37 +620,37 @@
 
 <script>
 const classes = [
-  { date: "Apr 23, 2026", day: "Thursday",  time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260423_6am" },
-  { date: "Apr 23, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260423_5pm" },
-  { date: "Apr 24, 2026", day: "Friday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260424" },
-  { date: "Apr 25, 2026", day: "Saturday",  time: "10:00 AM", duration: "2h", aircraft: "N488BA", key: "20260425" },
-  { date: "Apr 26, 2026", day: "Sunday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260426" },
-  { date: "Apr 26, 2026", day: "Sunday",    time: "2:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260426_2pm" },
-  { date: "Apr 27, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260427" },
-  { date: "Apr 29, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260429" },
-  { date: "Apr 29, 2026", day: "Wednesday", time: "6:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260429_6pm" },
-  { date: "Apr 30, 2026", day: "Thursday",  time: "8:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260430_8am" },
-  { date: "Apr 30, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260430" },
-  { date: "May 1, 2026",  day: "Friday",    time: "12:00 PM", duration: "2h", aircraft: "N349ME", key: "20260501" },
-  { date: "May 3, 2026",  day: "Sunday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260503" },
-  { date: "May 4, 2026",  day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260504" },
-  { date: "May 4, 2026",  day: "Monday",    time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260504_5pm" },
-  { date: "May 5, 2026",  day: "Tuesday",   time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260505" },
-  { date: "May 6, 2026",  day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260506" },
-  { date: "May 6, 2026",  day: "Wednesday", time: "9:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260506_9am" },
-  { date: "May 7, 2026",  day: "Thursday",  time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260507_7am" },
-  { date: "May 7, 2026",  day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260507" },
-  { date: "May 10, 2026", day: "Sunday",    time: "8:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260510" },
-  { date: "May 11, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260511" },
-  { date: "May 13, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260513" },
-  { date: "May 14, 2026", day: "Thursday",  time: "6:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260514" },
-  { date: "May 17, 2026", day: "Sunday",    time: "8:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260517" },
-  { date: "May 18, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260518" },
-  { date: "May 20, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260520" },
-  { date: "May 21, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", key: "20260521" },
-  { date: "May 24, 2026", day: "Sunday",    time: "7:00 AM",  duration: "4h", aircraft: "N349ME", key: "20260524" },
-  { date: "May 25, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", key: "20260525" },
-  { date: "May 31, 2026", day: "Sunday",    time: "7:00 AM",  duration: "4h", aircraft: "N445AF", key: "20260531" },
+  { date: "Apr 23, 2026", day: "Thursday",  time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260423_6am" },
+  { date: "Apr 23, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260423_5pm" },
+  { date: "Apr 24, 2026", day: "Friday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "Tom Lee", key: "20260424" },
+  { date: "Apr 25, 2026", day: "Saturday",  time: "10:00 AM", duration: "2h", aircraft: "N488BA", instructor: "Tom Lee", key: "20260425" },
+  { date: "Apr 26, 2026", day: "Sunday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260426" },
+  { date: "Apr 26, 2026", day: "Sunday",    time: "2:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260426_2pm" },
+  { date: "Apr 27, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260427" },
+  { date: "Apr 29, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260429" },
+  { date: "Apr 29, 2026", day: "Wednesday", time: "6:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260429_6pm" },
+  { date: "Apr 30, 2026", day: "Thursday",  time: "8:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260430_8am" },
+  { date: "Apr 30, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260430" },
+  { date: "May 1, 2026",  day: "Friday",    time: "12:00 PM", duration: "2h", aircraft: "N349ME", instructor: "", key: "20260501" },
+  { date: "May 3, 2026",  day: "Sunday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260503" },
+  { date: "May 4, 2026",  day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260504" },
+  { date: "May 4, 2026",  day: "Monday",    time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260504_5pm" },
+  { date: "May 5, 2026",  day: "Tuesday",   time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260505" },
+  { date: "May 6, 2026",  day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260506" },
+  { date: "May 6, 2026",  day: "Wednesday", time: "9:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "Marc Nathanson", key: "20260506_9am" },
+  { date: "May 7, 2026",  day: "Thursday",  time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260507_7am" },
+  { date: "May 7, 2026",  day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260507" },
+  { date: "May 10, 2026", day: "Sunday",    time: "8:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260510" },
+  { date: "May 11, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260511" },
+  { date: "May 13, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260513" },
+  { date: "May 14, 2026", day: "Thursday",  time: "6:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260514" },
+  { date: "May 17, 2026", day: "Sunday",    time: "8:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260517" },
+  { date: "May 18, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260518" },
+  { date: "May 20, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260520" },
+  { date: "May 21, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260521" },
+  { date: "May 24, 2026", day: "Sunday",    time: "7:00 AM",  duration: "4h", aircraft: "N349ME", instructor: "", key: "20260524" },
+  { date: "May 25, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260525" },
+  { date: "May 31, 2026", day: "Sunday",    time: "7:00 AM",  duration: "4h", aircraft: "N445AF", instructor: "", key: "20260531" },
 ];
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEhyAPHydRU4xN3Iyqfwq2qvqzPsAZTg0A1oY8nqM35_oNBRJd5Gd3V9Gfyh_ykf_g/exec';
@@ -755,7 +755,7 @@ function renderSchedule() {
       if (isToday) col.classList.add('card-current');
       col.innerHTML =
         '<div style="font-size:11px;font-weight:500;color:var(--text)"><span class="dot"></span>' + c.date + ' <span style="font-size:9px;font-weight:500;background:var(--accent-light);color:var(--accent);border-radius:100px;padding:1px 6px;">' + c.duration + '</span></div>' +
-        '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + ' · ' + c.aircraft + '</div>' +
+        '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + ' · ' + c.aircraft + (c.instructor ? ' · ' + c.instructor : '') + '</div>' +
         '<textarea class="notes-area" id="note_' + c.key + '" placeholder="Notes…" style="flex:1;min-height:120px;resize:none;overflow:hidden;">' + (notes[c.key] || '') + '</textarea>';
       const ta = col.querySelector('textarea');
       // Ghost text approach: mirror textarea content in a background div
