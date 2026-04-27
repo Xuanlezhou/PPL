@@ -551,6 +551,81 @@
     color: var(--accent);
   }
 
+  .instructor-bubble {
+    position: fixed;
+    bottom: 28px;
+    left: 28px;
+    z-index: 999;
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 14px 18px;
+    max-width: 280px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.10);
+    font-size: 13px;
+    font-weight: 300;
+    line-height: 1.6;
+    color: var(--text);
+    animation: bubble-in 0.4s ease;
+  }
+  .instructor-bubble strong { font-weight: 500; color: var(--accent); }
+  .instructor-bubble .bubble-close {
+    position: absolute;
+    top: 8px; right: 10px;
+    font-size: 16px;
+    cursor: pointer;
+    color: var(--muted);
+    background: none;
+    border: none;
+    line-height: 1;
+  }
+  .instructor-bubble .bubble-close:hover { color: var(--text); }
+  .bubble-tail {
+    position: absolute;
+    bottom: -10px; left: 24px;
+    width: 0; height: 0;
+    border-left: 10px solid transparent;
+    border-right: 10px solid transparent;
+    border-top: 10px solid #fff;
+    filter: drop-shadow(0 2px 2px rgba(0,0,0,0.08));
+  }
+  @keyframes bubble-in {
+    from { opacity: 0; transform: translateY(10px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  .bubble-nav {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 12px;
+    padding-top: 10px;
+    border-top: 1px solid var(--border);
+  }
+  .bubble-dots {
+    display: flex;
+    gap: 5px;
+  }
+  .bubble-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--border);
+    transition: background 0.2s;
+  }
+  .bubble-dot.active { background: var(--accent); }
+  .bubble-next {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: 100px;
+    padding: 5px 14px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+  .bubble-next:hover { opacity: 0.85; }
+
   @media (max-width: 860px) {
     .page-layout { flex-direction: column; }
     .summary-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); position: static; max-height: none; }
@@ -1033,7 +1108,57 @@ document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveNotes(); }
 });
 
+let bubbleStep = 1;
+const bubbleTotalSteps = 3;
+
+function bubbleNext() {
+  document.getElementById('bubble-step-' + bubbleStep).style.display = 'none';
+  document.getElementById('dot-' + bubbleStep).classList.remove('active');
+  bubbleStep++;
+  if (bubbleStep > bubbleTotalSteps) {
+    dismissBubble();
+    return;
+  }
+  document.getElementById('bubble-step-' + bubbleStep).style.display = 'block';
+  document.getElementById('dot-' + bubbleStep).classList.add('active');
+  if (bubbleStep === bubbleTotalSteps) {
+    document.getElementById('bubble-next-btn').textContent = 'Got it ✓';
+  }
+}
+
+function dismissBubble() {
+  document.getElementById('instructor-bubble').style.display = 'none';
+  localStorage.setItem('bubble_dismissed', '1');
+}
+
+// Only show bubble if not dismissed before
+if (localStorage.getItem('bubble_dismissed')) {
+  document.getElementById('instructor-bubble').style.display = 'none';
+}
+
 loadNotes();
 </script>
+<div class="instructor-bubble" id="instructor-bubble">
+  <button class="bubble-close" onclick="dismissBubble()">×</button>
+  <div id="bubble-step-1">
+    <strong>Hey Brendan! 👋</strong><br>
+    Whatever's in the boxes are just my test inputs — feel free to delete them and add what you think is appropriate!
+  </div>
+  <div id="bubble-step-2" style="display:none;">
+    The <span style="opacity:0.45;font-weight:500;">greyed out</span> sessions are ones already in the past.
+  </div>
+  <div id="bubble-step-3" style="display:none;">
+    All the data on here starts from <strong>April 23rd</strong>. If you think it would be helpful, I can also transfer all the past logbook data onto here so we have a full record in one place — just let me know! 😊
+  </div>
+  <div class="bubble-nav">
+    <div class="bubble-dots">
+      <div class="bubble-dot active" id="dot-1"></div>
+      <div class="bubble-dot" id="dot-2"></div>
+      <div class="bubble-dot" id="dot-3"></div>
+    </div>
+    <button class="bubble-next" id="bubble-next-btn" onclick="bubbleNext()">Next →</button>
+  </div>
+  <div class="bubble-tail"></div>
+</div>
 </body>
 </html>
