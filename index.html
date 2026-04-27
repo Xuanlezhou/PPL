@@ -532,6 +532,25 @@
 
 
 
+  .card-past {
+    opacity: 0.45;
+    filter: grayscale(30%);
+  }
+  .card-past .notes-area {
+    background: #EFEFEF;
+    color: #999;
+  }
+  .card-current {
+    border-left: 3px solid var(--accent) !important;
+    box-shadow: 0 0 0 2px rgba(200,85,61,0.15);
+  }
+  .card-current .date-main {
+    color: var(--accent);
+  }
+  .week-current .month-title {
+    color: var(--accent);
+  }
+
   @media (max-width: 860px) {
     .page-layout { flex-direction: column; }
     .summary-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); position: static; max-height: none; }
@@ -661,6 +680,7 @@ function loadNotes() {
   if (luEl) luEl.textContent = updatedStr;
     renderSchedule();
     buildSummary();
+    scrollToCurrentWeek();
     status.textContent = 'Synced ✓';
     setTimeout(() => { status.style.opacity = '0'; }, 2000);
     delete window[cbName];
@@ -669,6 +689,7 @@ function loadNotes() {
   script.onerror = function() {
     renderSchedule();
     buildSummary();
+    scrollToCurrentWeek();
     status.textContent = 'Loaded from cache';
     setTimeout(() => { status.style.opacity = '0'; }, 2000);
   };
@@ -700,11 +721,17 @@ function renderSchedule() {
     group.innerHTML = '<div class="month-title">' + label + ' <span class="month-count">' + items.length + ' class' + (items.length > 1 ? 'es' : '') + '</span></div>';
 
     const grid = document.createElement('div');
-    const cols = Math.min(items.length, 3); grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:8px;';
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:8px;';
 
     items.forEach(c => {
       const col = document.createElement('div');
+      const classTime = parseClassTime(c);
+      const isToday = new Date(c.date).toDateString() === now.toDateString();
+      const isPast = classTime <= now;
       col.style.cssText = 'background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:140px;';
+      if (isPast && !isToday) col.classList.add('card-past');
+      if (isToday) col.classList.add('card-current');
       col.innerHTML =
         '<div style="font-size:11px;font-weight:500;color:var(--text)"><span class="dot"></span>' + c.date + ' <span style="font-size:9px;font-weight:500;background:var(--accent-light);color:var(--accent);border-radius:100px;padding:1px 6px;">' + c.duration + '</span></div>' +
         '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + ' · ' + c.aircraft + '</div>' +
@@ -780,6 +807,15 @@ function groupByWeek(arr) {
   return weeks;
 }
 
+function scrollToCurrentWeek() {
+  const current = document.querySelector('.week-current');
+  if (current) {
+    setTimeout(() => {
+      current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  }
+}
+
 let autoSaveTimer = null;
 function scheduleAutoSave() {
   clearTimeout(autoSaveTimer);
@@ -847,7 +883,9 @@ const KEYWORDS = [
   { label: 'Lost procedures', terms: ['lost', 'lost procedures', 'lost comms', 'lost procedure'] },
   { label: 'Emergency descent', terms: ['emergency descent', 'rapid descent', 'emerg descent'] },
   { label: 'Solo cross-country (nearby airport)', terms: ['solo cross country', 'solo xc', 'solo cross-country', 'solo xctry'] },
-  { label: 'Attitude instrument flight', terms: ['attitude instrument', 'instrument flight', 'under the hood', 'hood work', 'unusual attitude', 'instrument', 'ifr', 'basic attitude'] },
+  { label: 'Simulated instrument flight', terms: ['simulated instrument', 'sim instrument', 'under the hood', 'hood work', 'foggles', 'foggy lens', 'fog lens', 'view limiting', 'view-limiting', 'vld', 'instrument conditions', 'simulated ifr', 'sim ifr', 'hood', 'hooded', 'instrument hood', 'safety pilot'] },
+  { label: 'Attitude instrument flight', terms: ['attitude instrument', 'instrument flight', 'unusual attitude', 'instrument', 'ifr', 'basic attitude', 'partial panel', 'full panel'] },
+  { label: 'Non-towered airports', terms: ['non-towered', 'non towered', 'untowered', 'uncontrolled airport', 'ctaf', 'unicom', 'no tower', 'without tower', 'towered airport'] },
   { label: 'VOR navigation', terms: ['vor', 'vor nav', 'vor navigation', 'vor tracking', 'vor radial'] },
   { label: 'GPS navigation', terms: ['gps', 'gps nav', 'gps navigation', 'garmin', 'gps tracking'] },
   { label: 'Dead reckoning', terms: ['dead reckoning', 'dr nav', 'ded reckoning', 'dr'] },
