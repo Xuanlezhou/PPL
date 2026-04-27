@@ -530,6 +530,8 @@
     text-overflow: ellipsis;
   }
 
+
+
   .card-past {
     opacity: 0.45;
     filter: grayscale(30%);
@@ -734,21 +736,25 @@ function loadNotes() {
   status.textContent = 'Loading…';
   status.style.opacity = '1';
 
+  // Load from cache instantly while waiting for Google
   try {
     const cached = localStorage.getItem('xz_notes_cache');
-    if (cached) { notes = JSON.parse(cached); }
+    if (cached) {
+      notes = JSON.parse(cached);
+    }
   } catch(e) {}
 
+  // Always fetch fresh from Google, then re-render
   const cbName = 'cb_load_' + Date.now();
   const script = document.createElement('script');
   window[cbName] = function(fresh) {
     notes = fresh;
     localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
-    const now2 = new Date();
-    const updatedStr = now2.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + now2.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
-    localStorage.setItem('xz_last_updated', updatedStr);
-    const luEl = document.getElementById('last-updated');
-    if (luEl) luEl.textContent = updatedStr;
+  const now2 = new Date();
+  const updatedStr = now2.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + now2.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  localStorage.setItem('xz_last_updated', updatedStr);
+  const luEl = document.getElementById('last-updated');
+  if (luEl) luEl.textContent = updatedStr;
     renderSchedule();
     buildSummary();
     scrollToCurrentWeek();
@@ -764,12 +770,11 @@ function loadNotes() {
     status.textContent = 'Loaded from cache';
     setTimeout(() => { status.style.opacity = '0'; }, 2000);
   };
+  // Fallback: if Google takes too long, render with cache
   setTimeout(() => {
     if (window[cbName]) {
       delete window[cbName];
       renderSchedule();
-      buildSummary();
-      scrollToCurrentWeek();
       status.textContent = 'Loaded from cache';
       setTimeout(() => { status.style.opacity = '0'; }, 2000);
     }
@@ -782,6 +787,7 @@ document.getElementById('today').textContent = new Date().toLocaleDateString('en
 const savedUpdated = localStorage.getItem('xz_last_updated');
 if (savedUpdated) { const luEl = document.getElementById('last-updated'); if (luEl) luEl.textContent = savedUpdated; }
 
+// Load from Google first, then render
 function parseClassTime(c) {
   const parts = c.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if (!parts) return new Date(c.date);
@@ -827,6 +833,7 @@ function renderSchedule() {
         '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + ' · ' + c.aircraft + (c.instructor ? ' · ' + c.instructor : '') + '</div>' +
         '<textarea class="notes-area" id="note_' + c.key + '" placeholder="Notes…" style="flex:1;min-height:120px;resize:none;overflow:hidden;">' + (notes[c.key] || '') + '</textarea>';
       const ta = col.querySelector('textarea');
+      // Ghost text approach: mirror textarea content in a background div
       const wrap = document.createElement('div');
       wrap.style.cssText = 'position:relative;flex:1;';
       const ghost = document.createElement('div');
@@ -908,7 +915,9 @@ function scrollToCurrentWeek() {
 let autoSaveTimer = null;
 function scheduleAutoSave() {
   clearTimeout(autoSaveTimer);
-  autoSaveTimer = setTimeout(() => { saveNotes(true); }, 1500);
+  autoSaveTimer = setTimeout(() => {
+    saveNotes(true);
+  }, 1500);
 }
 
 function saveNotes(silent) {
@@ -917,8 +926,10 @@ function saveNotes(silent) {
     if (el) notes[c.key] = el.value;
   });
 
+  // Save to localStorage instantly — feels immediate
   localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
 
+  // Show toast only if not silent auto-save
   if (!silent) {
     const toast = document.getElementById('toast');
     toast.textContent = 'Notes saved! ✓';
@@ -927,10 +938,12 @@ function saveNotes(silent) {
     const toastTop = document.getElementById('toast-top');
     if (toastTop) { toastTop.textContent = 'Saved! ✓'; toastTop.style.opacity = '1'; setTimeout(() => { toastTop.style.opacity = '0'; }, 2000); }
   } else {
+    // Show subtle indicator for auto-save
     const toastTop = document.getElementById('toast-top');
     if (toastTop) { toastTop.textContent = 'Auto-saved'; toastTop.style.opacity = '0.6'; setTimeout(() => { toastTop.style.opacity = '0'; }, 1500); }
   }
 
+  // Sync to Google Sheet silently in background
   const cbName = 'cb_save_' + Date.now();
   const script = document.createElement('script');
   window[cbName] = function() { delete window[cbName]; script.remove(); };
@@ -939,6 +952,7 @@ function saveNotes(silent) {
   script.src = SCRIPT_URL + '?action=save&data=' + encoded + '&callback=' + cbName;
   document.head.appendChild(script);
 }
+
 
 const KEYWORDS = [
   { label: 'Normal takeoffs', terms: ['normal takeoff', 'normal t/o', 'normal to', 'nto', 'norm t/o', 'norm takeoff', 'takeoff', 'take off', 't/o', 'to practice takeoff', 'landing and takeoff'] },
@@ -982,7 +996,9 @@ const KEYWORDS = [
 
 const AC_TERMS = [];
 KEYWORDS.forEach(kw => {
-  kw.terms.forEach(term => { AC_TERMS.push({ term, label: kw.label }); });
+  kw.terms.forEach(term => {
+    AC_TERMS.push({ term, label: kw.label });
+  });
 });
 
 function showSuggestion(ta, ghost) {
@@ -997,6 +1013,7 @@ function showSuggestion(ta, ghost) {
 
   if (best) {
     const rest = best.slice(currentSegment.length);
+    // Show full text in ghost: typed part transparent, suggestion in grey
     ghost.innerHTML = escHtml(value) + '<span style="color:#B5B2AB;">' + escHtml(rest) + '</span>';
     ta._suggestion = best;
   } else {
@@ -1008,7 +1025,9 @@ function escHtml(str) {
   return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
 }
 
-function liveScan() { buildSummary(); }
+function liveScan() {
+  buildSummary();
+}
 
 function kwMatches(kw, noteText) {
   return kw.terms.some(term => {
@@ -1028,6 +1047,9 @@ function buildSummary() {
   panelEmpty.style.display = 'none';
 
   const now = new Date();
+
+  // parseClassTime is defined globally
+
   const pastClasses = classes.filter(c => parseClassTime(c) <= now);
   const futureClasses = classes.filter(c => parseClassTime(c) > now);
 
@@ -1081,13 +1103,13 @@ function buildSummary() {
   }
 }
 
+
 document.addEventListener('keydown', e => {
   if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveNotes(); }
 });
 
-// ── Bubble logic ──────────────────────────────────────────────────────────────
 let bubbleStep = 1;
-const bubbleTotalSteps = 4; // ✅ FIXED: was 3, now matches 4 steps in HTML
+const bubbleTotalSteps = 3;
 
 function bubbleNext() {
   document.getElementById('bubble-step-' + bubbleStep).style.display = 'none';
@@ -1109,39 +1131,34 @@ function dismissBubble() {
   localStorage.setItem('bubble_dismissed', '1');
 }
 
+// Only show bubble if not dismissed before
 if (localStorage.getItem('bubble_dismissed')) {
   document.getElementById('instructor-bubble').style.display = 'none';
 }
 
 loadNotes();
 </script>
-
 <div class="instructor-bubble" id="instructor-bubble">
   <button class="bubble-close" onclick="dismissBubble()">×</button>
   <div id="bubble-step-1">
-    <strong>Hey Brendan!!!!! 👋</strong><br>
-    Whatever's in the boxes are just my test inputs! Feel free to delete them and add what you think is appropriate!
+    <strong>Hey Brendan! 👋</strong><br>
+    Whatever's in the boxes are just my test inputs — feel free to delete them and add what you think is appropriate!
   </div>
   <div id="bubble-step-2" style="display:none;">
-    The <span style="opacity:0.45;font-weight:500;">greyed out</span> sessions are ones already in the past.<br><br>All the data on here starts from <strong>April 23rd</strong>. If you think it would be helpful, I can also transfer all the past logbook data onto here so we have a full record in one place. Just let me know!
+    The <span style="opacity:0.45;font-weight:500;">greyed out</span> sessions are ones already in the past.
   </div>
   <div id="bubble-step-3" style="display:none;">
-    Whatever you type should already be saved automatically (it saves every 1.5 seconds after you stop typing), so no need to click the save button, but if you want to, you certainly could!
-  </div>
-  <div id="bubble-step-4" style="display:none;">
-    The <strong>Progress Tracker</strong> panel on the right tracks all the maneuvers from your notes automatically! 🎯<br><br>If you'd like to <strong>add, remove, or rename</strong> any of the items in the tracker, just let me know and I can update it! Thanks again for helping me :)
+    All the data on here starts from <strong>April 23rd</strong>. If you think it would be helpful, I can also transfer all the past logbook data onto here so we have a full record in one place — just let me know! 😊
   </div>
   <div class="bubble-nav">
     <div class="bubble-dots">
       <div class="bubble-dot active" id="dot-1"></div>
       <div class="bubble-dot" id="dot-2"></div>
       <div class="bubble-dot" id="dot-3"></div>
-      <div class="bubble-dot" id="dot-4"></div> <!-- ✅ FIXED: added missing 4th dot -->
     </div>
     <button class="bubble-next" id="bubble-next-btn" onclick="bubbleNext()">Next →</button>
   </div>
   <div class="bubble-tail"></div>
 </div>
-
 </body>
 </html>
