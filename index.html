@@ -34,7 +34,6 @@
   .hours-tile-value span { font-family:'DM Sans',sans-serif; font-size:11px; font-weight:300; color:rgba(255,255,255,0.5); margin-left:2px; }
   .hours-tile.accent { background:rgba(200,85,61,0.25); border-color:rgba(200,85,61,0.4); }
   .hours-tile.accent .hours-tile-value { color:#FFBCAE; }
-  .hours-tile.cost { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.18); }
   .hours-tile.cost .hours-tile-value { color:#FFD580; }
 
   .header-actions { display:flex; align-items:center; gap:10px; padding-top:4px; }
@@ -60,8 +59,6 @@
   .class-card:hover { box-shadow:0 3px 16px rgba(0,0,0,0.06); border-color:#ccc; }
   .class-card:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(200,85,61,0.1); }
   .card-past { opacity:0.5; }
-
-  /* scheduled cards — side by side */
   .class-card.sched { flex-direction:row; align-items:start; gap:14px; }
   .class-card.sched .date-info { width:165px; flex-shrink:0; }
   .class-card.sched .card-right { flex:1; }
@@ -84,8 +81,9 @@
   .chip-flight   { background:#E8F0FF; color:#2A4A8A; }
   .chip-ground   { background:#FFF3E0; color:#8A4A10; }
   .chip-duration { background:var(--accent-light); color:var(--accent); }
-  .chip-cost     { background:#FFF8E1; color:#7A5800; font-weight:500; }
-  .chip-cumcost  { background:#F3E8FF; color:#5A2D8A; font-weight:500; }
+  .chip-cost     { background:#FFF8E1; color:#7A5800; }
+  .chip-total    { background:#F0F0F0; color:#444; }
+  .chip-running  { background:#F3E8FF; color:#5A2D8A; }
 
   .card-right { flex:1; display:flex; flex-direction:column; gap:6px; }
   .notes-area { width:100%; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:300; color:var(--text); background:var(--input-bg); border:1px solid var(--border); border-radius:6px; padding:6px 8px; resize:none; min-height:36px; line-height:1.5; overflow:hidden; transition:border-color 0.2s; }
@@ -93,11 +91,11 @@
   .notes-area::placeholder { color:#B5B2AB; }
 
   /* ACTIONS */
-  .actions { display:flex; align-items:center; gap:14px; margin-top:28px; padding-top:22px; border-top:1px solid var(--border); }
+  .actions { display:flex; align-items:center; gap:14px; margin-top:28px; padding-top:22px; border-top:1px solid var(--border); flex-wrap:wrap; }
   .btn-save  { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:#fff; background:var(--accent); border:none; border-radius:100px; padding:11px 28px; cursor:pointer; }
   .btn-save:hover { opacity:0.88; }
-  .btn-print { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:400; color:var(--muted); background:transparent; border:1px solid var(--border); border-radius:100px; padding:11px 28px; cursor:pointer; }
-  .btn-print:hover { background:var(--border); color:var(--text); }
+  .btn-secondary { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:400; color:var(--muted); background:transparent; border:1px solid var(--border); border-radius:100px; padding:11px 28px; cursor:pointer; transition:background 0.2s; }
+  .btn-secondary:hover { background:var(--border); color:var(--text); }
   .saved-toast { font-size:13px; color:var(--green); background:var(--green-light); border-radius:100px; padding:6px 16px; opacity:0; transition:opacity 0.3s; pointer-events:none; }
   .saved-toast.show { opacity:1; }
 
@@ -131,12 +129,11 @@
     .class-card.sched { flex-direction:column; }
     .class-card.sched .date-info { width:auto; }
     .prior-grid { grid-template-columns:1fr 1fr; }
-    .actions { flex-wrap:wrap; }
   }
   @media (max-width:380px) { .prior-grid { grid-template-columns:1fr; } }
   @media print {
     header { background:#fff; color:#000; }
-    .btn-save-header,.btn-save,.btn-print,.actions,.summary-panel { display:none; }
+    .btn-save-header,.btn-save,.btn-secondary,.actions,.summary-panel { display:none; }
     .class-card { break-inside:avoid; }
   }
 </style>
@@ -188,7 +185,7 @@
     <div id="schedule"></div>
     <div class="actions">
       <button class="btn-save" onclick="saveNotes()">Save notes</button>
-      <button class="btn-print" onclick="window.print()">Print / PDF</button>
+      <button class="btn-secondary" onclick="window.print()">Print / PDF</button>
       <span class="saved-toast" id="toast">Notes saved!</span>
       <span class="saved-toast" id="load-status" style="opacity:0;"></span>
     </div>
@@ -207,28 +204,21 @@
 
 <script>
 // ── RATES ─────────────────────────────────────────────────────────────────
-const RATES = {
-  'N349ME': { flight: 320 }, // $235 wet + $85 instructor
-  'N445AF': { flight: 320 }, // $235 wet + $85 instructor
-  'N488BA': { flight: 310 }, // $225 wet + $85 instructor
-};
+const RATES = { 'N349ME':{flight:320}, 'N445AF':{flight:320}, 'N488BA':{flight:310} };
 const GROUND_RATE = 85;
-
 function sessionCost(c) {
   let cost = 0;
-  if (c.flightTime && c.aircraft && RATES[c.aircraft]) {
-    cost += c.flightTime * RATES[c.aircraft].flight;
-  }
-  if (c.groundTime) {
-    cost += c.groundTime * GROUND_RATE;
-  }
+  if(c.flightTime && c.aircraft && RATES[c.aircraft]) cost += c.flightTime * RATES[c.aircraft].flight;
+  if(c.groundTime) cost += c.groundTime * GROUND_RATE;
   return Math.round(cost * 100) / 100;
 }
-
-function fmtCost(n) {
-  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+function estimatedCost(c) {
+  const rate = RATES[c.aircraft] ? RATES[c.aircraft].flight : 320;
+  const dur = parseFloat(c.duration) || 2;
+  return Math.round((dur * rate + 0.5 * GROUND_RATE) * 100) / 100;
 }
-function fmtHrs(n) { return n.toFixed(1); }
+function fmtCost(n) { return '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmtHrs(n)  { return n.toFixed(1); }
 
 // ── PRIOR SESSIONS ────────────────────────────────────────────────────────
 const priorSessions = [
@@ -296,333 +286,323 @@ const classes = [
   { date:"May 31, 2026", day:"Sunday",    time:"7:00 AM",  duration:"4h", aircraft:"N445AF", instructor:"",               flightTime:null, groundTime:null, key:"20260531" },
 ];
 
-// Estimated rates for future unlogged sessions
-function estimatedCost(c) {
-  const rate = RATES[c.aircraft] ? RATES[c.aircraft].flight : 320;
-  const durHrs = parseFloat(c.duration) || 2;
-  // Estimate: full duration as flight if no data, plus ground estimate of 0.5
-  return Math.round((durHrs * rate + 0.5 * GROUND_RATE) * 100) / 100;
-}
-
+// ── ORIGINAL GOOGLE SHEETS BACKEND (unchanged) ────────────────────────────
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEhyAPHydRU4xN3Iyqfwq2qvqzPsAZTg0A1oY8nqM35_oNBRJd5Gd3V9Gfyh_ykf_g/exec';
 let notes = {};
 
-// ── HOURS + COST DISPLAY ──────────────────────────────────────────────────
+function loadNotes() {
+  const status = document.getElementById('load-status');
+  status.textContent = 'Loading…'; status.style.opacity = '1';
+  // Load from cache instantly while waiting for Google
+  try { const cached = localStorage.getItem('xz_notes_cache'); if(cached) notes = JSON.parse(cached); } catch(e) {}
+  // Always fetch fresh from Google, then re-render
+  const cbName = 'cb_load_' + Date.now();
+  const script = document.createElement('script');
+  window[cbName] = function(fresh) {
+    notes = fresh;
+    localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
+    const now2 = new Date();
+    const updatedStr = now2.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' + now2.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+    localStorage.setItem('xz_last_updated', updatedStr);
+    const luEl = document.getElementById('last-updated'); if(luEl) luEl.textContent = updatedStr;
+    renderAll(); buildSummary(); scrollToCurrentWeek();
+    status.textContent = 'Synced ✓'; setTimeout(() => { status.style.opacity = '0'; }, 2000);
+    delete window[cbName]; script.remove();
+  };
+  script.onerror = function() {
+    renderAll(); buildSummary(); scrollToCurrentWeek();
+    status.textContent = 'Loaded from cache'; setTimeout(() => { status.style.opacity = '0'; }, 2000);
+  };
+  setTimeout(() => {
+    if(window[cbName]) {
+      delete window[cbName];
+      renderAll(); buildSummary(); scrollToCurrentWeek();
+      status.textContent = 'Loaded from cache'; setTimeout(() => { status.style.opacity = '0'; }, 2000);
+    }
+  }, 5000);
+  script.src = SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
+  document.head.appendChild(script);
+}
+
+let autoSaveTimer = null;
+function scheduleAutoSave() { clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(() => saveNotes(true), 1500); }
+
+function saveNotes(silent) {
+  [...priorSessions, ...classes].forEach(c => { const el = document.getElementById('note_' + c.key); if(el) notes[c.key] = el.value; });
+  localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
+  if(!silent) {
+    const toast = document.getElementById('toast'); toast.textContent = 'Notes saved! ✓'; toast.classList.add('show'); setTimeout(() => toast.classList.remove('show'), 2000);
+    const tt = document.getElementById('toast-top'); if(tt) { tt.textContent = 'Saved! ✓'; tt.classList.add('show'); setTimeout(() => tt.classList.remove('show'), 2000); }
+  } else {
+    const tt = document.getElementById('toast-top'); if(tt) { tt.textContent = 'Auto-saved'; tt.style.opacity = '0.6'; setTimeout(() => { tt.style.opacity = '0'; }, 1500); }
+  }
+  // Sync to Google Sheet silently in background
+  const cbName = 'cb_save_' + Date.now();
+  const script = document.createElement('script');
+  window[cbName] = function() { delete window[cbName]; script.remove(); };
+  script.onerror = function() { delete window[cbName]; script.remove(); };
+  script.src = SCRIPT_URL + '?action=save&data=' + encodeURIComponent(JSON.stringify(notes)) + '&callback=' + cbName;
+  document.head.appendChild(script);
+}
+
+// ── HOURS DISPLAY ─────────────────────────────────────────────────────────
 function parseClassTime(c) {
   const parts = c.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if(!parts) return new Date(c.date);
-  let h=parseInt(parts[1]); const m=parseInt(parts[2]); const ap=parts[3].toUpperCase();
+  let h = parseInt(parts[1]); const m = parseInt(parts[2]); const ap = parts[3].toUpperCase();
   if(ap==='PM'&&h!==12) h+=12; if(ap==='AM'&&h===12) h=0;
-  const d=new Date(c.date); d.setHours(h,m,0,0); return d;
+  const d = new Date(c.date); d.setHours(h,m,0,0); return d;
 }
 
 function updateHoursDisplay() {
   const now = new Date();
-  const priorFlight = priorSessions.reduce((s,r)=>s+r.flightTime,0);
-  const priorGround = priorSessions.reduce((s,r)=>s+r.groundTime,0);
-  const priorCost   = priorSessions.reduce((s,r)=>s+sessionCost(r),0);
-
-  const pastSched   = classes.filter(c=>parseClassTime(c)<=now);
-  const schedFlight = pastSched.filter(c=>c.flightTime).reduce((s,c)=>s+c.flightTime,0);
-  const schedGround = pastSched.filter(c=>c.groundTime).reduce((s,c)=>s+c.groundTime,0);
-  const schedCost   = pastSched.reduce((s,c)=>s+sessionCost(c),0);
-
-  const tf=priorFlight+schedFlight, tg=priorGround+schedGround, tc=priorCost+schedCost;
-
+  const pf = priorSessions.reduce((s,r)=>s+r.flightTime,0);
+  const pg = priorSessions.reduce((s,r)=>s+r.groundTime,0);
+  const pc = priorSessions.reduce((s,r)=>s+sessionCost(r),0);
+  const past = classes.filter(c=>parseClassTime(c)<=now);
+  const sf = past.filter(c=>c.flightTime).reduce((s,c)=>s+c.flightTime,0);
+  const sg = past.filter(c=>c.groundTime).reduce((s,c)=>s+c.groundTime,0);
+  const sc = past.reduce((s,c)=>s+sessionCost(c),0);
+  const tf=pf+sf, tg=pg+sg, tc=pc+sc;
   const sv=(id,v,sfx)=>{const el=document.getElementById(id);if(el)el.innerHTML=v+(sfx?'<span>'+sfx+'</span>':'');};
-  sv('hdr-flight',   fmtHrs(tf), 'hrs');
-  sv('hdr-ground',   fmtHrs(tg), 'hrs');
+  sv('hdr-flight',   fmtHrs(tf),'hrs');
+  sv('hdr-ground',   fmtHrs(tg),'hrs');
   sv('hdr-total-hrs',fmtHrs(tf+tg),'hrs');
-  sv('hdr-cost',     fmtCost(tc), '');
-}
-
-// ── LOAD / SAVE ───────────────────────────────────────────────────────────
-function loadNotes() {
-  const status=document.getElementById('load-status');
-  status.textContent='Loading…'; status.style.opacity='1';
-  try{const c=localStorage.getItem('xz_notes_cache');if(c)notes=JSON.parse(c);}catch(e){}
-  const cbName='cb_load_'+Date.now(), script=document.createElement('script');
-  window[cbName]=function(fresh){
-    notes=fresh; localStorage.setItem('xz_notes_cache',JSON.stringify(notes));
-    const now2=new Date();
-    const str=now2.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+now2.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    localStorage.setItem('xz_last_updated',str);
-    const el=document.getElementById('last-updated');if(el)el.textContent=str;
-    renderAll(); scrollToCurrentWeek();
-    status.textContent='Synced ✓'; setTimeout(()=>{status.style.opacity='0';},2000);
-    delete window[cbName]; script.remove();
-  };
-  script.onerror=function(){renderAll();scrollToCurrentWeek();status.textContent='Loaded from cache';setTimeout(()=>{status.style.opacity='0';},2000);};
-  setTimeout(()=>{if(window[cbName]){delete window[cbName];renderAll();status.textContent='Loaded from cache';setTimeout(()=>{status.style.opacity='0';},2000);}},5000);
-  script.src=SCRIPT_URL+'?callback='+cbName+'&t='+Date.now();
-  document.head.appendChild(script);
-}
-
-let autoSaveTimer=null;
-function scheduleAutoSave(){clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(()=>saveNotes(true),1500);}
-
-function saveNotes(silent){
-  [...priorSessions,...classes].forEach(c=>{const el=document.getElementById('note_'+c.key);if(el)notes[c.key]=el.value;});
-  localStorage.setItem('xz_notes_cache',JSON.stringify(notes));
-  if(!silent){
-    const t=document.getElementById('toast');t.textContent='Notes saved! ✓';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);
-    const tt=document.getElementById('toast-top');if(tt){tt.textContent='Saved! ✓';tt.classList.add('show');setTimeout(()=>tt.classList.remove('show'),2000);}
-  } else {
-    const tt=document.getElementById('toast-top');if(tt){tt.textContent='Auto-saved';tt.style.opacity='0.6';setTimeout(()=>{tt.style.opacity='0';},1500);}
-  }
-  const cbName='cb_save_'+Date.now(),sc=document.createElement('script');
-  window[cbName]=function(){delete window[cbName];sc.remove();};
-  sc.onerror=function(){delete window[cbName];sc.remove();};
-  sc.src=SCRIPT_URL+'?action=save&data='+encodeURIComponent(JSON.stringify(notes))+'&callback='+cbName;
-  document.head.appendChild(sc);
+  sv('hdr-cost',     fmtCost(tc),'');
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────
-document.getElementById('today').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-const savedUpdated=localStorage.getItem('xz_last_updated');
-if(savedUpdated){const el=document.getElementById('last-updated');if(el)el.textContent=savedUpdated;}
+document.getElementById('today').textContent = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
+const savedUpdated = localStorage.getItem('xz_last_updated');
+if(savedUpdated) { const el=document.getElementById('last-updated'); if(el) el.textContent=savedUpdated; }
 
-function makeTA(key, placeholder){
-  const ta=document.createElement('textarea');
-  ta.className='notes-area'; ta.id='note_'+key;
-  ta.placeholder=placeholder||'Notes…'; ta.value=notes[key]||'';
-  ta.addEventListener('input',function(){
-    this.style.height='auto';this.style.height=this.scrollHeight+'px';
-    showSuggestion(this);liveScan();scheduleAutoSave();
+function makeTA(key, placeholder) {
+  const ta = document.createElement('textarea');
+  ta.className = 'notes-area'; ta.id = 'note_' + key;
+  ta.placeholder = placeholder || 'Notes…'; ta.value = notes[key] || '';
+  ta.addEventListener('input', function() {
+    this.style.height='auto'; this.style.height=this.scrollHeight+'px';
+    showSuggestion(this); liveScan(); scheduleAutoSave();
   });
-  ta.addEventListener('keydown',function(e){
-    if(e.key==='Tab'&&ta._suggestion){
+  ta.addEventListener('keydown', function(e) {
+    if(e.key==='Tab' && ta._suggestion) {
       e.preventDefault();
-      const val=this.value,d=Math.max(val.lastIndexOf('\n'),val.lastIndexOf(','));
-      if(d===-1){this.value=ta._suggestion;}
-      else{const b=val.slice(0,d+1),sp=val.slice(d+1).match(/^\s*/)[0];this.value=b+sp+ta._suggestion;}
-      ta._suggestion=null;this.style.height='auto';this.style.height=this.scrollHeight+'px';liveScan();
+      const val=this.value, d=Math.max(val.lastIndexOf('\n'),val.lastIndexOf(','));
+      if(d===-1) { this.value=ta._suggestion; }
+      else { const b=val.slice(0,d+1),sp=val.slice(d+1).match(/^\s*/)[0]; this.value=b+sp+ta._suggestion; }
+      ta._suggestion=null; this.style.height='auto'; this.style.height=this.scrollHeight+'px'; liveScan();
     }
   });
-  setTimeout(()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';},0);
+  setTimeout(()=>{ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; },0);
   return ta;
 }
 
-function renderAll(){
+function renderAll() {
   updateHoursDisplay();
-  const container=document.getElementById('schedule');
-  container.innerHTML='';
-  const now=new Date();
+  const container = document.getElementById('schedule');
+  container.innerHTML = '';
+  const now = new Date();
 
-  // ── PRIOR SECTION ──────────────────────────────────────────────────────
-  const div1=document.createElement('div');
-  div1.className='section-divider';
-  div1.innerHTML='<div class="section-divider-line"></div><div class="section-divider-label">Prior sessions · Jan 13 – Apr 22, 2026</div><div class="section-divider-line"></div>';
+  // ── PRIOR SECTION ──
+  const div1 = document.createElement('div');
+  div1.className = 'section-divider';
+  div1.innerHTML = '<div class="section-divider-line"></div><div class="section-divider-label">Prior sessions · Jan 13 – Apr 22, 2026</div><div class="section-divider-line"></div>';
   container.appendChild(div1);
 
-  const grid=document.createElement('div');
-  grid.className='prior-grid';
-  priorSessions.forEach(c=>{
-    const cost=sessionCost(c);
-    const card=document.createElement('div');
-    card.className='class-card card-past';
-    let chips='<div class="time-chips">';
-    if(c.flightTime) chips+='<span class="chip chip-flight">✈ '+fmtHrs(c.flightTime)+'h</span>';
-    if(c.groundTime) chips+='<span class="chip chip-ground">Gnd '+fmtHrs(c.groundTime)+'h</span>';
-    const totalHrs=c.flightTime+c.groundTime;
-    if(totalHrs>0) chips+='<span class="chip" style="background:#F0F0F0;color:#444;font-weight:500;">'+fmtHrs(totalHrs)+'h total</span>';
-    chips+='<span class="chip chip-cost">'+fmtCost(cost)+'</span>';
-    chips+='</div>';
-    const info=document.createElement('div');
-    info.className='date-info';
-    info.innerHTML='<div class="date-main"><span class="dot"></span>'+c.date+'</div>'+
+  const grid = document.createElement('div');
+  grid.className = 'prior-grid';
+  priorSessions.forEach(c => {
+    const cost = sessionCost(c);
+    const card = document.createElement('div');
+    card.className = 'class-card card-past';
+    let chips = '<div class="time-chips">';
+    if(c.flightTime) chips += '<span class="chip chip-flight">✈ '+fmtHrs(c.flightTime)+'h</span>';
+    if(c.groundTime) chips += '<span class="chip chip-ground">Gnd '+fmtHrs(c.groundTime)+'h</span>';
+    const tot = c.flightTime + c.groundTime;
+    if(tot > 0) chips += '<span class="chip chip-total">'+fmtHrs(tot)+'h total</span>';
+    chips += '<span class="chip chip-cost">'+fmtCost(cost)+'</span></div>';
+    const info = document.createElement('div');
+    info.className = 'date-info';
+    info.innerHTML = '<div class="date-main"><span class="dot"></span>'+c.date+'</div>'+
       '<div class="date-sub">'+(c.aircraft||'Ground only')+' · '+c.instructor+'</div>'+chips;
     card.appendChild(info);
-    card.appendChild(makeTA(c.key,'What did you cover?'));
+    card.appendChild(makeTA(c.key, 'What did you cover?'));
     grid.appendChild(card);
   });
   container.appendChild(grid);
 
-  // ── SCHEDULED SECTION ──────────────────────────────────────────────────
-  const div2=document.createElement('div');
-  div2.className='section-divider';
-  div2.style.marginTop='36px';
-  div2.innerHTML='<div class="section-divider-line"></div><div class="section-divider-label">Scheduled sessions · from today</div><div class="section-divider-line"></div>';
+  // ── SCHEDULED SECTION ──
+  const div2 = document.createElement('div');
+  div2.className = 'section-divider';
+  div2.style.marginTop = '36px';
+  div2.innerHTML = '<div class="section-divider-line"></div><div class="section-divider-label">Scheduled sessions · from today</div><div class="section-divider-line"></div>';
   container.appendChild(div2);
 
-  // Only show sessions from today onwards
-  const todayStart=new Date(); todayStart.setHours(0,0,0,0);
-  const upcomingClasses=classes.filter(c=>{ const d=new Date(c.date); d.setHours(0,0,0,0); return d>=todayStart; });
+  const todayStart = new Date(); todayStart.setHours(0,0,0,0);
+  const upcoming = classes.filter(c=>{ const d=new Date(c.date); d.setHours(0,0,0,0); return d>=todayStart; });
 
-  // Running cumulative cost = prior total + all past scheduled sessions + each upcoming in order
-  const priorCost=priorSessions.reduce((s,r)=>s+sessionCost(r),0);
-  const pastSchedCost=classes.filter(c=>parseClassTime(c)<todayStart).reduce((s,c)=>s+sessionCost(c),0);
-  let runningCost=priorCost+pastSchedCost;
+  // running totals starting from all prior + past scheduled
+  let runCost   = priorSessions.reduce((s,r)=>s+sessionCost(r),0)
+                + classes.filter(c=>parseClassTime(c)<todayStart).reduce((s,c)=>s+sessionCost(c),0);
+  let runFlight = priorSessions.reduce((s,r)=>s+r.flightTime,0)
+                + classes.filter(c=>parseClassTime(c)<todayStart&&c.flightTime).reduce((s,c)=>s+c.flightTime,0);
+  let runGround = priorSessions.reduce((s,r)=>s+r.groundTime,0)
+                + classes.filter(c=>parseClassTime(c)<todayStart&&c.groundTime).reduce((s,c)=>s+c.groundTime,0);
 
-  // running flight/ground hrs
-  const priorFlight=priorSessions.reduce((s,r)=>s+r.flightTime,0);
-  const priorGround=priorSessions.reduce((s,r)=>s+r.groundTime,0);
-  const pastSchedFlight=classes.filter(c=>parseClassTime(c)<todayStart).filter(c=>c.flightTime).reduce((s,c)=>s+c.flightTime,0);
-  const pastSchedGround=classes.filter(c=>parseClassTime(c)<todayStart).filter(c=>c.groundTime).reduce((s,c)=>s+c.groundTime,0);
-  let runningFlight=priorFlight+pastSchedFlight;
-  let runningGround=priorGround+pastSchedGround;
-
-  const weeks=groupByWeek(upcomingClasses);
-  weeks.forEach(({label,items})=>{
-    const group=document.createElement('div');
-    group.className='week-group';
-    const hasCur=items.some(c=>new Date(c.date).toDateString()===now.toDateString());
+  groupByWeek(upcoming).forEach(({label,items}) => {
+    const group = document.createElement('div');
+    group.className = 'week-group';
+    const hasCur = items.some(c=>new Date(c.date).toDateString()===now.toDateString());
     if(hasCur) group.classList.add('week-current');
-    group.innerHTML='<div class="week-title">'+label+' <span class="week-count">'+items.length+' class'+(items.length>1?'es':'')+'</span></div>';
+    group.innerHTML = '<div class="week-title">'+label+' <span class="week-count">'+items.length+' class'+(items.length>1?'es':'')+'</span></div>';
 
-    items.forEach(c=>{
-      const isToday=new Date(c.date).toDateString()===now.toDateString();
-      const isLogged=c.flightTime!=null||c.groundTime!=null;
-      const cost = isLogged ? sessionCost(c) : estimatedCost(c);
-      runningCost += cost;
-      if(c.flightTime) runningFlight+=c.flightTime;
-      if(c.groundTime) runningGround+=c.groundTime;
+    items.forEach(c => {
+      const isToday  = new Date(c.date).toDateString()===now.toDateString();
+      const isLogged = c.flightTime!=null || c.groundTime!=null;
+      const cost     = isLogged ? sessionCost(c) : estimatedCost(c);
+      runCost   += cost;
+      if(c.flightTime) runFlight += c.flightTime;
+      if(c.groundTime) runGround += c.groundTime;
 
-      const card=document.createElement('div');
-      card.className='class-card sched';
+      const card = document.createElement('div');
+      card.className = 'class-card sched';
       if(isToday) card.classList.add('card-current');
 
-      // chips
-      let chips='<div class="time-chips">';
-      chips+='<span class="chip chip-duration">✈ '+c.duration+'</span>';
-      if(c.flightTime!=null) chips+='<span class="chip chip-flight">Flight '+fmtHrs(c.flightTime)+'h</span>';
-      if(c.groundTime!=null) chips+='<span class="chip chip-ground">Gnd '+fmtHrs(c.groundTime)+'h</span>';
-      const sessionTotal=(c.flightTime||0)+(c.groundTime||0);
-      if(sessionTotal>0) chips+='<span class="chip" style="background:#F0F0F0;color:#444;font-weight:500;">'+fmtHrs(sessionTotal)+'h total</span>';
-      chips+='<span class="chip chip-cost">'+(isLogged?'':'~')+fmtCost(cost)+'</span>';
-      chips+='</div>';
+      let chips = '<div class="time-chips"><span class="chip chip-duration">✈ '+c.duration+'</span>';
+      if(c.flightTime!=null) chips += '<span class="chip chip-flight">Flight '+fmtHrs(c.flightTime)+'h</span>';
+      if(c.groundTime!=null) chips += '<span class="chip chip-ground">Gnd '+fmtHrs(c.groundTime)+'h</span>';
+      const st = (c.flightTime||0)+(c.groundTime||0);
+      if(st>0) chips += '<span class="chip chip-total">'+fmtHrs(st)+'h total</span>';
+      chips += '<span class="chip chip-cost">'+(isLogged?'':'~')+fmtCost(cost)+'</span></div>';
 
-      // running totals row
-      const totalsRow='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;">'+
-        '<span class="chip" style="background:#F3E8FF;color:#5A2D8A;font-size:10px;">∑ '+fmtCost(runningCost)+'</span>'+
-        '<span class="chip chip-flight" style="font-size:10px;">∑ '+fmtHrs(runningFlight)+'h flt</span>'+
-        '<span class="chip chip-ground" style="font-size:10px;">∑ '+fmtHrs(runningGround)+'h gnd</span>'+
+      const totRow = '<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px;">'+
+        '<span class="chip chip-running">∑ '+fmtCost(runCost)+'</span>'+
+        '<span class="chip chip-flight" style="font-size:10px;">∑ '+fmtHrs(runFlight)+'h flt</span>'+
+        '<span class="chip chip-ground" style="font-size:10px;">∑ '+fmtHrs(runGround)+'h gnd</span>'+
         '</div>';
 
-      const info=document.createElement('div');
-      info.className='date-info';
-      info.innerHTML=
+      const info = document.createElement('div');
+      info.className = 'date-info';
+      info.innerHTML =
         '<div class="date-main"><span class="dot"></span>'+c.date+'</div>'+
         '<div class="date-sub">'+c.day+' · '+c.time+'</div>'+
         '<div class="date-sub">'+c.aircraft+(c.instructor?' · '+c.instructor:'')+'</div>'+
-        chips+totalsRow;
+        chips+totRow;
 
-      const right=document.createElement('div');
-      right.className='card-right';
-      right.appendChild(makeTA(c.key,'Notes…'));
+      const right = document.createElement('div');
+      right.className = 'card-right';
+      right.appendChild(makeTA(c.key, 'Notes…'));
 
       card.appendChild(info); card.appendChild(right);
       group.appendChild(card);
     });
     container.appendChild(group);
   });
-
-  buildSummary();
 }
 
-function groupByWeek(arr){
-  const weeks=[],map={};
-  arr.forEach(c=>{
-    const d=new Date(c.date),day=d.getDay();
+function groupByWeek(arr) {
+  const weeks=[], map={};
+  arr.forEach(c => {
+    const d=new Date(c.date), day=d.getDay();
     const mon=new Date(d); mon.setDate(d.getDate()-(day===0?6:day-1));
     const sun=new Date(mon); sun.setDate(mon.getDate()+6);
     const f=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
     const key=mon.toISOString().slice(0,10);
-    if(!map[key]){map[key]={label:'Week of '+f(mon)+' – '+f(sun),items:[]};weeks.push(map[key]);}
+    if(!map[key]){ map[key]={label:'Week of '+f(mon)+' – '+f(sun),items:[]}; weeks.push(map[key]); }
     map[key].items.push(c);
   });
   return weeks;
 }
 
-function scrollToCurrentWeek(){
-  const cur=document.querySelector('.week-current,.week-group');
+function scrollToCurrentWeek() {
+  const cur = document.querySelector('.week-current,.week-group');
   if(cur) setTimeout(()=>cur.scrollIntoView({behavior:'smooth',block:'start'}),300);
 }
 
-// ── KEYWORDS ──────────────────────────────────────────────────────────────
-const KEYWORDS=[
-  {label:'Normal takeoffs',            terms:['normal takeoff','normal t/o','nto','takeoff','take off','t/o']},
-  {label:'Normal landings',            terms:['normal landing','normal ldg','nldg','landing','ldg','full stop']},
-  {label:'Straight & level / climbs / descents / turns', terms:['straight and level','straight & level','s&l','climb','descent','level flight','turns']},
-  {label:'Slow flight',                terms:['slow flight','slow-flight','sf']},
-  {label:'Power-off stalls',           terms:['power off stall','power-off stall','pos','pwr off stall']},
-  {label:'Power-on stalls',            terms:['power on stall','power-on stall','pons','pwr on stall']},
-  {label:'Steep turns',                terms:['steep turn','steep turns','45 degree','45 bank','steep']},
-  {label:'Traffic pattern operations', terms:['traffic pattern','pattern work','pattern ops','pattern']},
-  {label:'Touch and goes',             terms:['touch and go','touch & go','t&g','tng','touch-and-go','tag']},
-  {label:'Rectangular course',         terms:['rectangular course','rectangular','rect course','rect']},
-  {label:'S-turns',                    terms:['s-turn','s turn','s turns','s-turns']},
+// ── KEYWORDS & AUTOCOMPLETE ───────────────────────────────────────────────
+const KEYWORDS = [
+  {label:'Normal takeoffs',            terms:['normal takeoff','normal t/o','normal to','nto','norm t/o','norm takeoff','takeoff','take off','t/o']},
+  {label:'Normal landings',            terms:['normal landing','normal ldg','nldg','norm ldg','norm landing','landing','ldg','full stop','full-stop']},
+  {label:'Straight & level / climbs / descents / turns', terms:['straight and level','straight & level','s&l','climb','descent','descend','level flight','turns']},
+  {label:'Slow flight',                terms:['slow flight','slow-flight','slowflight','sf']},
+  {label:'Power-off stalls',           terms:['power off stall','power-off stall','pos','pwr off stall','p/o stall']},
+  {label:'Power-on stalls',            terms:['power on stall','power-on stall','pons','pwr on stall','p/on stall']},
+  {label:'Steep turns',                terms:['steep turn','steep turns','45 degree','45°','45 bank','steep']},
+  {label:'Traffic pattern operations', terms:['traffic pattern','pattern work','pattern ops','touch and go','t&g','tng','touch-and-go','pattern']},
+  {label:'Touch and goes',             terms:['touch and go','touch & go','t&g','tng','touch-and-go','t/g','touch and goes','tag']},
+  {label:'Rectangular course',         terms:['rectangular course','rectangular','rect course','rect','ground ref rectangular']},
+  {label:'S-turns',                    terms:['s-turn','s turn','s turns','s-turns','s turns across']},
   {label:'Turns around a point',       terms:['turns around a point','turn around a point','tap','around a point']},
-  {label:'Crosswind takeoffs & landings', terms:['crosswind','cross wind','xwind','cw t/o','cw ldg']},
-  {label:'Forward and side slips',     terms:['slip','slips','forward slip','side slip','sideslip']},
-  {label:'Go-arounds / rejected takeoffs', terms:['go around','go-around','rejected takeoff','g/a','ga']},
-  {label:'Emergency approach & landing', terms:['emergency','emergency landing','forced landing','engine out','engine failure']},
+  {label:'Crosswind takeoffs & landings', terms:['crosswind','cross wind','cross-wind','xwind','x-wind','cw t/o','cw ldg']},
+  {label:'Forward and side slips',     terms:['slip','slips','forward slip','side slip','sideslip','fwd slip']},
+  {label:'Go-arounds / rejected takeoffs', terms:['go around','go-around','goaround','rejected takeoff','rejected t/o','g/a','ga']},
+  {label:'Emergency approach & landing', terms:['emergency','emergency landing','emergency approach','forced landing','engine out','engine failure']},
   {label:'Supervised solo',            terms:['solo','first solo','supervised solo','1st solo']},
-  {label:'Short-field takeoff & max climb', terms:['short field','short-field','max performance climb','sfto']},
-  {label:'Soft-field takeoff & landing', terms:['soft field','soft-field','softfield']},
-  {label:'Pilotage cross-countries',   terms:['pilotage','cross country','cross-country','xc','x-c']},
-  {label:'Diversion procedures',       terms:['diversion','divert','alternate']},
-  {label:'Lost procedures',            terms:['lost','lost procedures','lost comms']},
-  {label:'Emergency descent',          terms:['emergency descent','rapid descent']},
-  {label:'Solo cross-country',         terms:['solo cross country','solo xc','solo cross-country']},
-  {label:'Simulated instrument flight',terms:['simulated instrument','sim instrument','under the hood','hood work','foggles','hood']},
-  {label:'Attitude instrument flight', terms:['attitude instrument','unusual attitude','partial panel','full panel']},
-  {label:'Non-towered airports',       terms:['non-towered','non towered','untowered','ctaf','unicom']},
-  {label:'VOR navigation',             terms:['vor','vor nav','vor navigation']},
-  {label:'GPS navigation',             terms:['gps','gps nav','gps navigation','garmin']},
-  {label:'Dead reckoning',             terms:['dead reckoning','dr nav','ded reckoning']},
-  {label:'Night takeoffs & landings',  terms:['night takeoff','night landing','night t/o','night ldg']},
-  {label:'Night cross-country',        terms:['night cross country','night xc','night cross-country']},
-  {label:'Solo day cross-country',     terms:['solo day cross','solo day xc','150 nm','3 legs','long xc']},
-  {label:'Full ACS checkride review',  terms:['checkride','check ride','acs','practical test','review']},
-  {label:'Stage Check 1',              terms:['stage check 1','stage 1 check','stage1','sc1']},
-  {label:'Stage Check 2',              terms:['stage check 2','stage 2 check','stage2','sc2']},
-  {label:'Stage Check 3',              terms:['stage check 3','stage 3 check','stage3','sc3']},
+  {label:'Short-field takeoff & max climb', terms:['short field','short-field','shortfield','max performance climb','sfto','sf t/o']},
+  {label:'Soft-field takeoff & landing', terms:['soft field','soft-field','softfield','soft','sft fld']},
+  {label:'Pilotage cross-countries (25–50 NM)', terms:['pilotage','cross country','cross-country','xc','x-c','25 nm','50 nm']},
+  {label:'Diversion procedures',       terms:['diversion','divert','alternate','diversionary']},
+  {label:'Lost procedures',            terms:['lost','lost procedures','lost comms','lost procedure']},
+  {label:'Emergency descent',          terms:['emergency descent','rapid descent','emerg descent']},
+  {label:'Solo cross-country (nearby airport)', terms:['solo cross country','solo xc','solo cross-country','solo xctry']},
+  {label:'Simulated instrument flight',terms:['simulated instrument','sim instrument','under the hood','hood work','foggles','view limiting','hood','hooded','safety pilot']},
+  {label:'Attitude instrument flight', terms:['attitude instrument','instrument flight','unusual attitude','instrument','ifr','partial panel','full panel']},
+  {label:'Non-towered airports',       terms:['non-towered','non towered','untowered','uncontrolled airport','ctaf','unicom','no tower']},
+  {label:'VOR navigation',             terms:['vor','vor nav','vor navigation','vor tracking','vor radial']},
+  {label:'GPS navigation',             terms:['gps','gps nav','gps navigation','garmin','gps tracking']},
+  {label:'Dead reckoning',             terms:['dead reckoning','dr nav','ded reckoning','dr']},
+  {label:'Night takeoffs & landings',  terms:['night takeoff','night landing','night t/o','night ldg','night pattern']},
+  {label:'Night cross-country',        terms:['night cross country','night xc','night cross-country','night xctry']},
+  {label:'Solo day cross-country',     terms:['solo day cross','solo day xc','150 nm','3 legs','long xc','solo day']},
+  {label:'Full ACS checkride review',  terms:['checkride','check ride','acs','practical test','review','maneuver review','checkride review']},
+  {label:'Stage check 1',              terms:['stage check 1','stage 1 check','stage1','sc1','s/c 1','stage check one']},
+  {label:'Stage check 2',              terms:['stage check 2','stage 2 check','stage2','sc2','s/c 2','stage check two']},
+  {label:'Stage check 3',              terms:['stage check 3','stage 3 check','stage3','sc3','s/c 3','stage check three']},
 ];
-const AC_TERMS=[];
-KEYWORDS.forEach(kw=>kw.terms.forEach(t=>AC_TERMS.push({term:t,label:kw.label})));
+const AC_TERMS = [];
+KEYWORDS.forEach(kw => kw.terms.forEach(term => AC_TERMS.push({term, label:kw.label})));
 
-function showSuggestion(ta){
-  const val=ta.value,segs=val.split(/[\n,]/),cur=segs[segs.length-1].toLowerCase().trim();
-  if(cur.length<2){ta._suggestion=null;return;}
-  const m=AC_TERMS.find(t=>t.term.startsWith(cur)&&t.term!==cur);
-  const lm=!m&&KEYWORDS.find(kw=>kw.label.toLowerCase().startsWith(cur)&&kw.label.toLowerCase()!==cur);
-  ta._suggestion=m?m.term:(lm?lm.label:null);
+function showSuggestion(ta) {
+  const value = ta.value;
+  const segments = value.split(/[\n,]/);
+  const cur = segments[segments.length-1].toLowerCase().trim();
+  if(cur.length < 2) { ta._suggestion=null; return; }
+  const match = AC_TERMS.find(t => t.term.startsWith(cur) && t.term !== cur);
+  const labelMatch = !match && KEYWORDS.find(kw => kw.label.toLowerCase().startsWith(cur) && kw.label.toLowerCase() !== cur);
+  ta._suggestion = match ? match.term : (labelMatch ? labelMatch.label : null);
 }
 
-function liveScan(){buildSummary();}
+function liveScan() { buildSummary(); }
 
-function kwMatches(kw,txt){
-  return kw.terms.some(term=>{
-    const base=term.replace(/s$/,'');
-    return new RegExp('\\b'+base.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'s?\\b','i').test(txt);
+function kwMatches(kw, noteText) {
+  return kw.terms.some(term => {
+    const base = term.replace(/s$/,'');
+    const regex = new RegExp('\\b'+base.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'s?\\b','i');
+    return regex.test(noteText);
   });
 }
 
 // ── SUMMARY PANEL ────────────────────────────────────────────────────────
-function buildSummary(){
-  const btn=document.querySelector('.btn-refresh');
-  if(btn){btn.classList.add('spinning');setTimeout(()=>btn.classList.remove('spinning'),400);}
+function buildSummary() {
+  const btn = document.querySelector('.btn-refresh');
+  if(btn) { btn.classList.add('spinning'); setTimeout(()=>btn.classList.remove('spinning'),400); }
   updateHoursDisplay();
-  const panelEmpty=document.getElementById('panel-empty');
-  const panelList=document.getElementById('panel-list');
-  panelList.innerHTML=''; panelEmpty.style.display='none';
-  const now=new Date();
-  const allSessions=[...priorSessions,...classes];
-  const pastSessions=allSessions.filter(c=>{
-    if(c.day) return parseClassTime(c)<=now;
-    return new Date(c.date)<=now;
-  });
-  const futureSessions=classes.filter(c=>parseClassTime(c)>now);
-  const practiced=[],toPractice=[],notYet=[];
-  KEYWORDS.forEach(kw=>{
-    const pc=pastSessions.filter(c=>{const t=(notes[c.key]||'').toLowerCase();return t.trim()&&kwMatches(kw,t);}).length;
-    const pl=futureSessions.filter(c=>{const el=document.getElementById('note_'+c.key);const t=(el?el.value:(notes[c.key]||'')).toLowerCase();return t.trim()&&kwMatches(kw,t);}).length;
+  const panelEmpty = document.getElementById('panel-empty');
+  const panelList  = document.getElementById('panel-list');
+  panelList.innerHTML = ''; panelEmpty.style.display = 'none';
+  const now = new Date();
+  const allSessions = [...priorSessions, ...classes];
+  const pastSessions   = allSessions.filter(c => c.day ? parseClassTime(c)<=now : new Date(c.date)<=now);
+  const futureSessions = classes.filter(c => parseClassTime(c) > now);
+  const practiced=[], toPractice=[], notYet=[];
+  KEYWORDS.forEach(kw => {
+    const pc = pastSessions.filter(c=>{ const t=(notes[c.key]||'').toLowerCase(); return t.trim()&&kwMatches(kw,t); }).length;
+    const pl = futureSessions.filter(c=>{ const el=document.getElementById('note_'+c.key); const t=(el?el.value:(notes[c.key]||'')).toLowerCase(); return t.trim()&&kwMatches(kw,t); }).length;
     if(pc>0) practiced.push({label:kw.label,count:pc});
     else if(pl>0) toPractice.push({label:kw.label,count:pl});
     else notYet.push({label:kw.label});
   });
-  const make=(title,items,cls,cntCls)=>{
+  const make = (title,items,cls,cntCls) => {
     if(!items.length) return;
     const sec=document.createElement('div'); sec.className='panel-section';
     sec.innerHTML='<div class="panel-section-title">'+title+' ('+items.length+')</div>';
@@ -633,16 +613,16 @@ function buildSummary(){
     });
     panelList.appendChild(sec);
   };
-  make('Practiced',practiced.sort((a,b)=>b.count-a.count),'done','');
-  make('Planned',toPractice,'planned','planned-count');
-  make('Not yet',notYet,'','');
-  if(!practiced.length&&!toPractice.length){
+  make('Practiced', practiced.sort((a,b)=>b.count-a.count), 'done',    '');
+  make('Planned',   toPractice,                              'planned', 'planned-count');
+  make('Not yet',   notYet,                                  '',        '');
+  if(!practiced.length&&!toPractice.length) {
     panelEmpty.style.display='block';
     panelEmpty.textContent='No notes yet — fill in some sessions first!';
   }
 }
 
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveNotes();}});
+document.addEventListener('keydown', e => { if((e.ctrlKey||e.metaKey)&&e.key==='s'){ e.preventDefault(); saveNotes(); } });
 loadNotes();
 </script>
 </body>
