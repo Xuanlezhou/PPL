@@ -4,127 +4,98 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Xuanle — Class Schedule Plan</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
   :root {
     --bg: #F7F5F0; --card: #FFFFFF; --accent: #C8553D; --accent-light: #F5E8E4;
     --text: #1A1A18; --muted: #7A7870; --border: #E2DED6; --input-bg: #F7F5F0;
-    --green: #3A7D44; --green-light: #EAF5EC; --blue: #2A4A8A; --blue-light: #EEF4FF;
   }
   body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
-  header { background: var(--text); color: #fff; padding: 18px 28px 22px; position: relative; overflow: hidden; }
+  header { background: var(--text); color: #fff; padding: 14px 24px; position: relative; overflow: hidden; }
   header::before { content:''; position:absolute; top:-60px; right:-60px; width:240px; height:240px; border-radius:50%; background:var(--accent); opacity:0.18; }
   header::after  { content:''; position:absolute; bottom:-40px; left:30%; width:160px; height:160px; border-radius:50%; background:var(--accent); opacity:0.10; }
-  .header-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
-  .header-top { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; }
+  .header-inner { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; }
   header h1 { font-family:'DM Serif Display',serif; font-size:clamp(18px,3vw,26px); font-weight:400; letter-spacing:-0.5px; line-height:1.1; margin-bottom:10px; }
   header h1 span { color: var(--accent); }
   .header-meta { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
   .badge { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); border-radius:100px; padding:3px 10px; font-size:11px; font-weight:300; color:rgba(255,255,255,0.8); }
   .badge strong { color:#fff; font-weight:500; }
-  .hours-bar { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
-  .hours-tile { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.13); border-radius:10px; padding:10px 18px; min-width:120px; }
-  .hours-tile-label { font-size:9px; font-weight:500; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:4px; }
-  .hours-tile-value { font-family:'DM Serif Display',serif; font-size:24px; color:#fff; line-height:1; }
-  .hours-tile-value span { font-family:'DM Sans',sans-serif; font-size:11px; font-weight:300; color:rgba(255,255,255,0.5); margin-left:2px; }
-  .hours-tile.cost .hours-tile-value { color:#FFD580; }
-  .header-actions { display:flex; align-items:center; gap:10px; padding-top:4px; }
-  .btn-save-header { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:#fff; background:var(--accent); border:none; border-radius:100px; padding:9px 22px; cursor:pointer; transition:opacity 0.2s; }
-  .btn-save-header:hover { opacity:0.85; }
-  .toast-header { font-size:12px; color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.12); border-radius:100px; padding:5px 14px; opacity:0; transition:opacity 0.3s; pointer-events:none; }
-  .toast-header.show { opacity:1; }
   .page-layout { display:flex; align-items:stretch; }
-  main { flex:1; min-width:0; padding:28px 28px 80px; }
-  .section-divider { display:flex; align-items:center; gap:14px; margin:28px 0 18px; }
-  .section-divider-line { flex:1; height:1px; background:var(--border); }
-  .section-divider-label { font-size:10px; font-weight:500; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
-  .prior-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:9px; }
-  .class-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; transition:box-shadow 0.2s, border-color 0.2s; }
-  .class-card:hover { box-shadow:0 3px 16px rgba(0,0,0,0.06); border-color:#ccc; }
-  .class-card:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(200,85,61,0.1); }
-  .card-past { opacity:0.5; }
-  .class-card.sched { flex-direction:row; align-items:start; gap:14px; }
-  .class-card.sched .date-info { width:165px; flex-shrink:0; }
-  .class-card.sched .card-right { flex:1; }
-  .card-current { border-left:3px solid var(--accent) !important; box-shadow:0 0 0 2px rgba(200,85,61,0.12); }
-  .card-current .date-main { color:var(--accent); }
-  .week-group { margin-bottom:26px; }
-  .week-title { font-family:'DM Serif Display',serif; font-size:18px; font-weight:400; color:var(--text); margin-bottom:11px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .week-count { font-family:'DM Sans',sans-serif; font-size:11px; background:var(--accent-light); color:var(--accent); border-radius:100px; padding:2px 10px; font-weight:500; }
-  .week-current .week-title { color:var(--accent); }
-  .date-info { display:flex; flex-direction:column; gap:3px; }
-  .date-main { font-size:13px; font-weight:500; }
-  .date-sub { font-size:11px; color:var(--muted); font-weight:300; line-height:1.5; }
-  .dot { display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--accent); margin-right:5px; vertical-align:middle; margin-bottom:1px; }
-  .time-chips { display:flex; gap:4px; margin-top:5px; flex-wrap:wrap; }
-  .chip { font-size:10px; font-weight:500; border-radius:100px; padding:2px 8px; }
-  .chip-flight   { background:#E8F0FF; color:#2A4A8A; }
-  .chip-ground   { background:#FFF3E0; color:#8A4A10; }
-  .chip-duration { background:var(--accent-light); color:var(--accent); }
-  .chip-cost     { background:#FFF8E1; color:#7A5800; }
-  .chip-total    { background:#F0F0F0; color:#444; }
-  .chip-running  { background:#F3E8FF; color:#5A2D8A; }
-  .card-right { flex:1; display:flex; flex-direction:column; gap:6px; }
-  .notes-area { width:100%; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:300; color:var(--text); background:var(--input-bg); border:1px solid var(--border); border-radius:6px; padding:6px 8px; resize:none; min-height:36px; line-height:1.5; overflow:hidden; transition:border-color 0.2s; }
+  main { flex:1; min-width:0; max-width:760px; margin:0 auto; padding:24px 24px 60px; }
+  .month-group { margin-bottom:28px; }
+  .month-title { font-family:'DM Serif Display',serif; font-size:22px; font-weight:400; color:var(--text); margin-bottom:14px; display:flex; align-items:center; gap:10px; }
+  .month-count { font-family:'DM Sans',sans-serif; font-size:12px; background:var(--accent-light); color:var(--accent); border-radius:100px; padding:2px 10px; font-weight:500; }
+  .week-current .month-title { color:var(--accent); }
+  .dot { display:inline-block; width:6px; height:6px; border-radius:50%; background:var(--accent); margin-right:6px; vertical-align:middle; margin-bottom:1px; }
+  .class-card {
+    background:#fff; border:1px solid var(--border); border-radius:10px;
+    padding:10px 12px; display:flex; flex-direction:column; gap:6px;
+    transition:box-shadow 0.2s, border-color 0.2s;
+  }
+  .class-card:hover { box-shadow:0 4px 16px rgba(0,0,0,0.07); border-color:#ccc; }
+  .class-card:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(200,85,61,0.12); }
+  .card-past { opacity:0.45; filter:grayscale(30%); }
+  .card-current { border-left:3px solid var(--accent) !important; box-shadow:0 0 0 2px rgba(200,85,61,0.15); }
+  .card-current .card-date { color:var(--accent); }
+  .card-date { font-size:11px; font-weight:500; color:var(--text); }
+  .card-sub  { font-size:10px; color:var(--muted); margin-bottom:2px; }
+  .dur-badge { font-size:9px; font-weight:500; background:var(--accent-light); color:var(--accent); border-radius:100px; padding:1px 6px; }
+  .notes-area {
+    width:100%; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:300;
+    color:var(--text); background:var(--input-bg); border:1px solid var(--border);
+    border-radius:6px; padding:6px 8px; resize:none; min-height:80px; line-height:1.5;
+    overflow:hidden; transition:border-color 0.2s; flex:1;
+  }
   .notes-area:focus { outline:none; border-color:var(--accent); background:#fff; }
   .notes-area::placeholder { color:#B5B2AB; }
-  .actions { display:flex; align-items:center; gap:14px; margin-top:28px; padding-top:22px; border-top:1px solid var(--border); flex-wrap:wrap; }
-  .btn-save  { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:#fff; background:var(--accent); border:none; border-radius:100px; padding:11px 28px; cursor:pointer; }
+  .actions { display:flex; align-items:center; gap:14px; margin-top:32px; padding-top:24px; border-top:1px solid var(--border); flex-wrap:wrap; }
+  .btn-save { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:#fff; background:var(--accent); border:none; border-radius:100px; padding:11px 28px; cursor:pointer; }
   .btn-save:hover { opacity:0.88; }
-  .btn-secondary { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:400; color:var(--muted); background:transparent; border:1px solid var(--border); border-radius:100px; padding:11px 28px; cursor:pointer; transition:background 0.2s; }
-  .btn-secondary:hover { background:var(--border); color:var(--text); }
-  .saved-toast { font-size:13px; color:var(--green); background:var(--green-light); border-radius:100px; padding:6px 16px; opacity:0; transition:opacity 0.3s; pointer-events:none; }
+  .btn-print { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:400; color:var(--muted); background:transparent; border:1px solid var(--border); border-radius:100px; padding:11px 28px; cursor:pointer; }
+  .btn-print:hover { background:var(--border); color:var(--text); }
+  .saved-toast { font-size:13px; color:#3A7D44; background:#EAF5EC; border-radius:100px; padding:6px 16px; opacity:0; transition:opacity 0.3s; pointer-events:none; }
   .saved-toast.show { opacity:1; }
-  .summary-panel { width:300px; flex-shrink:0; background:var(--card); border-left:1px solid var(--border); padding:22px 18px; position:sticky; top:0; height:100vh; overflow-y:auto; }
-  .panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border); }
-  .panel-title { font-family:'DM Serif Display',serif; font-size:15px; font-weight:400; }
-  .btn-refresh { font-size:16px; background:transparent; border:1px solid var(--border); border-radius:50%; width:30px; height:30px; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; }
+  .summary-panel { width:360px; flex-shrink:0; background:var(--card); border-left:1px solid var(--border); padding:28px 24px; position:sticky; top:0; height:100vh; overflow-y:auto; }
+  .panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:20px; padding-bottom:14px; border-bottom:1px solid var(--border); }
+  .panel-title { font-family:'DM Serif Display',serif; font-size:16px; font-weight:400; }
+  .btn-refresh { font-size:18px; background:transparent; border:1px solid var(--border); border-radius:50%; width:32px; height:32px; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; }
   .btn-refresh:hover { background:var(--bg); color:var(--text); }
   .btn-refresh.spinning { animation:spin 0.6s linear; }
   @keyframes spin { to { transform:rotate(360deg); } }
-  .panel-section { margin-bottom:16px; }
-  .panel-section-title { font-size:9px; font-weight:500; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:7px; }
-  .panel-item { display:flex; align-items:center; justify-content:space-between; padding:6px 9px; border-radius:7px; margin-bottom:3px; font-size:12px; font-weight:300; color:var(--text); background:var(--bg); gap:7px; }
-  .panel-item.done    { background:var(--green-light); color:#2A6B35; }
-  .panel-item.planned { background:var(--blue-light);  color:var(--blue); }
+  .panel-empty { font-size:13px; color:var(--muted); font-weight:300; text-align:center; padding:20px 0; }
+  .panel-section { margin-bottom:20px; }
+  .panel-section-title { font-size:9px; font-weight:500; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:8px; }
+  .panel-item { display:flex; align-items:center; justify-content:space-between; padding:7px 10px; border-radius:8px; margin-bottom:4px; font-size:12.5px; font-weight:300; color:var(--text); background:var(--bg); gap:8px; }
+  .panel-item.done    { background:#EAF5EC; color:#2A6B35; }
+  .panel-item.planned { background:#EEF4FF; color:#2A4A8A; }
   .panel-item-label { flex:1; line-height:1.4; }
-  .panel-count { font-size:11px; font-weight:500; background:var(--accent-light); color:var(--accent); border-radius:100px; padding:1px 7px; white-space:nowrap; }
+  .panel-count { font-size:12px; font-weight:500; background:var(--accent-light); color:var(--accent); border-radius:100px; padding:1px 8px; white-space:nowrap; }
   .panel-item.done    .panel-count { background:#C8EDD0; color:#2A6B35; }
-  .panel-item.planned .panel-count { background:#C8D8F5; color:var(--blue); }
-  .panel-empty { font-size:12px; color:var(--muted); font-weight:300; text-align:center; padding:16px 0; }
-  footer { text-align:center; font-size:11px; color:var(--muted); padding:28px; border-top:1px solid var(--border); }
-  @media (max-width:900px) { .page-layout{flex-direction:column} .summary-panel{width:100%;border-left:none;border-top:1px solid var(--border);position:static;height:auto} }
-  @media (max-width:600px) { main{padding:20px 14px 60px} .class-card.sched{flex-direction:column} .class-card.sched .date-info{width:auto} .prior-grid{grid-template-columns:1fr 1fr} }
-  @media (max-width:380px) { .prior-grid{grid-template-columns:1fr} }
-  @media print { header{background:#fff;color:#000} .btn-save-header,.btn-save,.btn-secondary,.actions,.summary-panel{display:none} .class-card{break-inside:avoid} }
+  .panel-item.planned .panel-count { background:#C8D8F5; color:#2A4A8A; }
+  footer { text-align:center; font-size:12px; color:var(--muted); padding:32px; border-top:1px solid var(--border); }
+  @media (max-width:860px) { .page-layout{flex-direction:column} .summary-panel{width:100%;border-left:none;border-top:1px solid var(--border);position:static;height:auto} }
+  @media (max-width:520px) { main{padding:20px 14px 60px} }
+  @media print { header{background:#fff;color:#000} .btn-save,.btn-print,.actions,.summary-panel{display:none} .class-card{break-inside:avoid} }
 </style>
 </head>
 <body>
 
 <header>
   <div class="header-inner">
-    <div class="header-top">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
       <div>
         <h1>Xuanle<br><span>Class Schedule Plan</span></h1>
         <div class="header-meta">
-          <span class="badge"><strong>31</strong> sessions scheduled</span>
+          <span class="badge"><strong>31</strong> sessions booked</span>
           <span class="badge"><strong>Apr 23</strong> — <strong>May 31, 2026</strong></span>
-          <span class="badge">&#9992; N349ME &middot; N445AF &middot; N488BA</span>
-          <span class="badge">&#9888;&#65039; Apr 29 cancelled</span>
-          <span class="badge">East Coast Aero Club &middot; KOWD</span>
+          <span class="badge">&#9992; <strong>N349ME</strong> &middot; <strong>N445AF</strong> &middot; <strong>N488BA</strong></span>
           <span class="badge">Updated <strong id="last-updated">—</strong></span>
         </div>
-        <div class="hours-bar">
-          <div class="hours-tile"><div class="hours-tile-label">Flight hrs to date</div><div class="hours-tile-value" id="hdr-flight">—<span>hrs</span></div></div>
-          <div class="hours-tile"><div class="hours-tile-label">Ground hrs to date</div><div class="hours-tile-value" id="hdr-ground">—<span>hrs</span></div></div>
-          <div class="hours-tile"><div class="hours-tile-label">Total hrs to date</div><div class="hours-tile-value" id="hdr-total-hrs">—<span>hrs</span></div></div>
-          <div class="hours-tile cost"><div class="hours-tile-label">Total spent to date</div><div class="hours-tile-value" id="hdr-cost">—</div></div>
-        </div>
       </div>
-      <div class="header-actions">
-        <button class="btn-save-header" onclick="saveNotes()">Save &amp; sync</button>
-        <span class="toast-header" id="toast-top"></span>
+      <div style="display:flex;align-items:center;gap:10px;padding-top:8px;">
+        <button onclick="saveNotes()" style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:#fff;background:var(--accent);border:none;border-radius:100px;padding:10px 24px;cursor:pointer;">Save &amp; sync</button>
+        <span class="saved-toast" id="toast-top" style="color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.15);opacity:0;"></span>
       </div>
     </div>
   </div>
@@ -135,13 +106,12 @@
     <div id="schedule"></div>
     <div class="actions">
       <button class="btn-save" onclick="saveNotes()">Save &amp; sync</button>
-      <button class="btn-secondary" onclick="window.print()">Print / PDF</button>
-      <button class="btn-secondary" onclick="exportNotes()">&#8595; Export notes</button>
-      <button class="btn-secondary" onclick="importNotes()">&#8593; Import notes</button>
+      <button class="btn-print" onclick="window.print()">Print / PDF</button>
       <span class="saved-toast" id="toast"></span>
-      <span class="saved-toast" id="load-status" style="color:var(--muted);background:transparent;"></span>
+      <span class="saved-toast" id="load-status" style="color:var(--muted);background:transparent;opacity:0;"></span>
     </div>
   </main>
+
   <aside class="summary-panel">
     <div class="panel-header">
       <div class="panel-title">Progress tracker</div>
@@ -152,110 +122,56 @@
   </aside>
 </div>
 
-<footer>Xuanle Zhou &middot; East Coast Aero Club &middot; KOWD &middot; <span id="today"></span></footer>
+<footer>Xuanle Zhou &middot; Class Schedule Plan &middot; <span id="today"></span></footer>
 
 <script>
-// ── RATES ─────────────────────────────────────────────────────────────────
-const RATES = { 'N349ME':{flight:320}, 'N445AF':{flight:320}, 'N488BA':{flight:310} };
-const GROUND_RATE = 85;
-function sessionCost(c) {
-  let cost = 0;
-  if(c.flightTime && c.aircraft && RATES[c.aircraft]) cost += c.flightTime * RATES[c.aircraft].flight;
-  if(c.groundTime) cost += c.groundTime * GROUND_RATE;
-  return Math.round(cost * 100) / 100;
-}
-function estimatedCost(c) {
-  const rate = RATES[c.aircraft] ? RATES[c.aircraft].flight : 320;
-  const dur = parseFloat(c.duration) || 2;
-  return Math.round((dur * rate + 0.5 * GROUND_RATE) * 100) / 100;
-}
-function fmtCost(n) { return '$' + n.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2}); }
-function fmtHrs(n)  { return n.toFixed(1); }
-
-// ── PRIOR SESSIONS ────────────────────────────────────────────────────────
-const priorSessions = [
-  { date:"Jan 13, 2026",  aircraft:"N349ME", flightTime:0.70, groundTime:0.70, instructor:"Charles Prenavaeu", key:"prior_20260113" },
-  { date:"Feb 19, 2026",  aircraft:"N349ME", flightTime:0.90, groundTime:0.50, instructor:"Ken Tucker",        key:"prior_20260219" },
-  { date:"Mar 1, 2026",   aircraft:"N445AF", flightTime:0.80, groundTime:1.00, instructor:"Ronald Leung",      key:"prior_20260301" },
-  { date:"Mar 4, 2026",   aircraft:"N445AF", flightTime:1.10, groundTime:0.60, instructor:"Tom Lee",           key:"prior_20260304" },
-  { date:"Mar 10, 2026",  aircraft:"N349ME", flightTime:0.80, groundTime:1.00, instructor:"Tyler Black",       key:"prior_20260310" },
-  { date:"Mar 12, 2026",  aircraft:null,     flightTime:0,    groundTime:1.30, instructor:"Brendan Saluk",     key:"prior_20260312" },
-  { date:"Mar 15, 2026",  aircraft:"N349ME", flightTime:0.90, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260315" },
-  { date:"Mar 17, 2026",  aircraft:null,     flightTime:0,    groundTime:2.00, instructor:"Brendan Saluk",     key:"prior_20260317" },
-  { date:"Mar 18, 2026",  aircraft:"N445AF", flightTime:1.00, groundTime:0.70, instructor:"Brendan Saluk",     key:"prior_20260318" },
-  { date:"Mar 19, 2026",  aircraft:"N445AF", flightTime:1.00, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260319" },
-  { date:"Mar 24, 2026",  aircraft:"N445AF", flightTime:1.40, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260324" },
-  { date:"Mar 25, 2026",  aircraft:"N349ME", flightTime:1.30, groundTime:0.30, instructor:"Brendan Saluk",     key:"prior_20260325" },
-  { date:"Mar 26, 2026",  aircraft:"N445AF", flightTime:1.30, groundTime:0.60, instructor:"Brendan Saluk",     key:"prior_20260326" },
-  { date:"Mar 27, 2026",  aircraft:"N349ME", flightTime:1.20, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260327" },
-  { date:"Mar 29, 2026",  aircraft:"N445AF", flightTime:1.10, groundTime:1.90, instructor:"Brendan Saluk",     key:"prior_20260329" },
-  { date:"Mar 30, 2026",  aircraft:"N349ME", flightTime:1.30, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260330" },
-  { date:"Mar 31, 2026",  aircraft:"N445AF", flightTime:0.90, groundTime:1.30, instructor:"Brendan Saluk",     key:"prior_20260331" },
-  { date:"Apr 1, 2026",   aircraft:"N349ME", flightTime:1.60, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260401" },
-  { date:"Apr 2, 2026",   aircraft:null,     flightTime:0,    groundTime:0.90, instructor:"Brendan Saluk",     key:"prior_20260402" },
-  { date:"Apr 7, 2026",   aircraft:null,     flightTime:0,    groundTime:1.00, instructor:"Brendan Saluk",     key:"prior_20260407" },
-  { date:"Apr 8, 2026",   aircraft:"N445AF", flightTime:3.30, groundTime:0.70, instructor:"Brendan Saluk",     key:"prior_20260408" },
-  { date:"Apr 9, 2026",   aircraft:"N445AF", flightTime:1.30, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260409" },
-  { date:"Apr 10, 2026",  aircraft:"N349ME", flightTime:1.30, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260410" },
-  { date:"Apr 12, 2026",  aircraft:"N445AF", flightTime:1.10, groundTime:0.90, instructor:"Brendan Saluk",     key:"prior_20260412" },
-  { date:"Apr 14, 2026",  aircraft:"N445AF", flightTime:1.30, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260414" },
-  { date:"Apr 15, 2026",  aircraft:"N349ME", flightTime:1.00, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260415" },
-  { date:"Apr 22, 2026",  aircraft:"N349ME", flightTime:1.20, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260422" },
-];
-
-// ── SCHEDULED CLASSES ────────────────────────────────────────────────────
 const classes = [
-  { date:"Apr 23, 2026", day:"Thursday",  time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:1.10, groundTime:0.50, key:"20260423_6am" },
-  { date:"Apr 23, 2026", day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:null, groundTime:1.50, key:"20260423_5pm" },
-  { date:"Apr 24, 2026", day:"Friday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Tom Lee",         flightTime:1.00, groundTime:0.50, key:"20260424" },
-  { date:"Apr 25, 2026", day:"Saturday",  time:"10:00 AM", duration:"2h", aircraft:"N488BA", instructor:"Tom Lee",         flightTime:0.90, groundTime:0.30, key:"20260425" },
-  { date:"Apr 26, 2026", day:"Sunday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:1.30, groundTime:0.40, key:"20260426" },
-  { date:"Apr 26, 2026", day:"Sunday",    time:"2:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:1.20, groundTime:0.40, key:"20260426_2pm" },
-  { date:"Apr 27, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:0.90, groundTime:0.50, key:"20260427" },
-  { date:"Apr 30, 2026", day:"Thursday",  time:"8:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:1.30, groundTime:0.60, key:"20260430_8am" },
-  { date:"Apr 30, 2026", day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:null, groundTime:null, key:"20260430" },
-  { date:"May 1, 2026",  day:"Friday",    time:"12:00 PM", duration:"2h", aircraft:"N488BA", instructor:"Brendan Saluk",  flightTime:1.10, groundTime:0.60, key:"20260501" },
-  { date:"May 3, 2026",  day:"Sunday",    time:"6:00 AM",  duration:"2h", aircraft:"N445AF", instructor:"Brendan Saluk",  flightTime:null, groundTime:null, key:"20260503" },
-  { date:"May 4, 2026",  day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N445AF", instructor:"Brendan Saluk",  flightTime:null, groundTime:null, key:"20260504" },
-  { date:"May 4, 2026",  day:"Monday",    time:"5:00 PM",  duration:"2h", aircraft:"N445AF", instructor:"Brendan Saluk",  flightTime:null, groundTime:null, key:"20260504_5pm" },
-  { date:"May 5, 2026",  day:"Tuesday",   time:"5:00 PM",  duration:"2h", aircraft:"N445AF", instructor:"Brendan Saluk",  flightTime:null, groundTime:null, key:"20260505" },
-  { date:"May 6, 2026",  day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N445AF", instructor:"Marc Nathanson", flightTime:null, groundTime:null, key:"20260506" },
-  { date:"May 6, 2026",  day:"Wednesday", time:"9:00 AM",  duration:"2h", aircraft:"N445AF", instructor:"Marc Nathanson", flightTime:null, groundTime:null, key:"20260506_9am" },
-  { date:"May 7, 2026",  day:"Thursday",  time:"6:00 AM",  duration:"2h", aircraft:"N445AF", instructor:"Brendan Saluk",  flightTime:null, groundTime:null, key:"20260507_7am" },
-  { date:"May 7, 2026",  day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N445AF", instructor:"Brendan Saluk",  flightTime:null, groundTime:null, key:"20260507" },
-  { date:"May 9, 2026",  day:"Saturday",  time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Ronald Leung",   flightTime:null, groundTime:null, key:"20260509" },
-  { date:"May 10, 2026", day:"Sunday",    time:"8:00 AM",  duration:"2h", aircraft:"N445AF", instructor:"Tom Lee",         flightTime:null, groundTime:null, key:"20260510" },
-  { date:"May 11, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N445AF", instructor:"Brendan Saluk",  flightTime:null, groundTime:null, key:"20260511" },
-  { date:"May 12, 2026", day:"Tuesday",   time:"6:00 AM",  duration:"2h", aircraft:"N445AF", instructor:"Brendan Saluk",  flightTime:null, groundTime:null, key:"20260512" },
-  { date:"May 13, 2026", day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260513" },
-  { date:"May 14, 2026", day:"Thursday",  time:"6:00 PM",  duration:"2h", aircraft:"N445AF", instructor:"",               flightTime:null, groundTime:null, key:"20260514" },
-  { date:"May 17, 2026", day:"Sunday",    time:"8:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260517" },
-  { date:"May 18, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260518" },
-  { date:"May 20, 2026", day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260520" },
-  { date:"May 21, 2026", day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260521" },
-  { date:"May 24, 2026", day:"Sunday",    time:"7:00 AM",  duration:"4h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260524" },
-  { date:"May 25, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260525" },
-  { date:"May 31, 2026", day:"Sunday",    time:"7:00 AM",  duration:"4h", aircraft:"N445AF", instructor:"",               flightTime:null, groundTime:null, key:"20260531" },
+  { date:"Apr 23, 2026", day:"Thursday",  time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260423_6am" },
+  { date:"Apr 23, 2026", day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260423_5pm" },
+  { date:"Apr 24, 2026", day:"Friday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Tom Lee",         key:"20260424" },
+  { date:"Apr 25, 2026", day:"Saturday",  time:"10:00 AM", duration:"2h", aircraft:"N488BA", instructor:"Tom Lee",         key:"20260425" },
+  { date:"Apr 26, 2026", day:"Sunday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260426" },
+  { date:"Apr 26, 2026", day:"Sunday",    time:"2:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260426_2pm" },
+  { date:"Apr 27, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260427" },
+  { date:"Apr 29, 2026", day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260429" },
+  { date:"Apr 29, 2026", day:"Wednesday", time:"6:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260429_6pm" },
+  { date:"Apr 30, 2026", day:"Thursday",  time:"8:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260430_8am" },
+  { date:"Apr 30, 2026", day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260430" },
+  { date:"May 1, 2026",  day:"Friday",    time:"12:00 PM", duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260501" },
+  { date:"May 3, 2026",  day:"Sunday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260503" },
+  { date:"May 4, 2026",  day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260504" },
+  { date:"May 4, 2026",  day:"Monday",    time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260504_5pm" },
+  { date:"May 5, 2026",  day:"Tuesday",   time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260505" },
+  { date:"May 6, 2026",  day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Marc Nathanson", key:"20260506" },
+  { date:"May 6, 2026",  day:"Wednesday", time:"9:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Marc Nathanson", key:"20260506_9am" },
+  { date:"May 7, 2026",  day:"Thursday",  time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260507_7am" },
+  { date:"May 7, 2026",  day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260507" },
+  { date:"May 10, 2026", day:"Sunday",    time:"8:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260510" },
+  { date:"May 11, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260511" },
+  { date:"May 13, 2026", day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260513" },
+  { date:"May 14, 2026", day:"Thursday",  time:"6:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260514" },
+  { date:"May 17, 2026", day:"Sunday",    time:"8:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260517" },
+  { date:"May 18, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260518" },
+  { date:"May 20, 2026", day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260520" },
+  { date:"May 21, 2026", day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260521" },
+  { date:"May 24, 2026", day:"Sunday",    time:"7:00 AM",  duration:"4h", aircraft:"N349ME", instructor:"",               key:"20260524" },
+  { date:"May 25, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               key:"20260525" },
+  { date:"May 31, 2026", day:"Sunday",    time:"7:00 AM",  duration:"4h", aircraft:"N445AF", instructor:"",               key:"20260531" },
 ];
 
 // ── GOOGLE SHEETS SYNC ────────────────────────────────────────────────────
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEhyAPHydRU4xN3Iyqfwq2qvqzPsAZTg0A1oY8nqM35_oNBRJd5Gd3V9Gfyh_ykf_g/exec';
 let notes = {};
 
-// Clean reusable JSONP helper — returns a Promise
 function jsonp(url, timeoutMs) {
   timeoutMs = timeoutMs || 6000;
   return new Promise(function(resolve, reject) {
-    var id = '_jsonp_' + Date.now() + '_' + Math.floor(Math.random()*9999);
+    var id = '_cb_' + Date.now() + '_' + Math.floor(Math.random()*9999);
     var script = document.createElement('script');
-    var timer = setTimeout(function() { cleanup(); reject(new Error('timeout')); }, timeoutMs);
-    function cleanup() {
-      clearTimeout(timer);
-      delete window[id];
-      if(script.parentNode) script.parentNode.removeChild(script);
-    }
-    window[id] = function(data) { cleanup(); resolve(data); };
-    script.onerror = function() { cleanup(); reject(new Error('error')); };
+    var timer = setTimeout(function(){ cleanup(); reject(new Error('timeout')); }, timeoutMs);
+    function cleanup(){ clearTimeout(timer); delete window[id]; if(script.parentNode) script.parentNode.removeChild(script); }
+    window[id] = function(data){ cleanup(); resolve(data); };
+    script.onerror = function(){ cleanup(); reject(new Error('error')); };
     script.src = url + (url.indexOf('?') >= 0 ? '&' : '?') + 'callback=' + id + '&t=' + Date.now();
     document.head.appendChild(script);
   });
@@ -266,247 +182,167 @@ function setStatus(msg, fade) {
   var el = document.getElementById('load-status');
   if(!el) return;
   el.textContent = msg; el.style.opacity = '1';
-  if(fade) setTimeout(function() { el.style.opacity = '0'; }, 3000);
+  if(fade) setTimeout(function(){ el.style.opacity = '0'; }, 3000);
 }
 
-// On load: show cached data immediately, then fetch fresh from Sheets
 function loadNotes() {
   try { var c = localStorage.getItem('xz_notes_cache'); if(c) notes = JSON.parse(c); } catch(e) {}
-  var savedUpdated = localStorage.getItem('xz_last_updated');
-  if(savedUpdated) { var lu = document.getElementById('last-updated'); if(lu) lu.textContent = savedUpdated; }
-  renderAll(); buildSummary(); scrollToCurrentWeek();
+  var saved = localStorage.getItem('xz_last_updated');
+  if(saved){ var lu=document.getElementById('last-updated'); if(lu) lu.textContent=saved; }
+  renderSchedule(); buildSummary(); scrollToCurrentWeek();
 
-  setStatus('Syncing with Sheets\u2026', false);
+  setStatus('Syncing\u2026', false);
   jsonp(SCRIPT_URL)
-    .then(function(fresh) {
-      if(fresh && typeof fresh === 'object' && Object.keys(fresh).length > 0) {
+    .then(function(fresh){
+      if(fresh && typeof fresh === 'object' && Object.keys(fresh).length > 0){
         notes = fresh;
         localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
-        var now = new Date();
-        var str = now.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' +
-                  now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+        var str = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' +
+                  new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
         localStorage.setItem('xz_last_updated', str);
-        var luEl = document.getElementById('last-updated'); if(luEl) luEl.textContent = str;
-        renderAll(); buildSummary();
+        var luEl=document.getElementById('last-updated'); if(luEl) luEl.textContent=str;
+        renderSchedule(); buildSummary();
         setStatus('Synced \u2713');
-      } else {
-        setStatus('Loaded from cache');
-      }
+      } else { setStatus('Loaded from cache'); }
     })
-    .catch(function() { setStatus('Loaded from cache (Sheets unreachable)'); });
+    .catch(function(){ setStatus('Loaded from cache'); });
 }
 
-// Save: localStorage first (never lose data), then push to Sheets
 var autoSaveTimer = null;
-function scheduleAutoSave() { clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(function() { saveNotes(true); }, 1500); }
+function scheduleAutoSave(){ clearTimeout(autoSaveTimer); autoSaveTimer = setTimeout(function(){ saveNotes(true); }, 1500); }
 
 function saveNotes(silent) {
-  [].concat(priorSessions, classes).forEach(function(c) {
+  classes.forEach(function(c){
     var el = document.getElementById('note_' + c.key);
     if(el) notes[c.key] = el.value;
   });
-
   localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
-  var now = new Date();
-  var str = now.toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' +
-            now.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+  var str = new Date().toLocaleDateString('en-US',{month:'short',day:'numeric'}) + ' ' +
+            new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
   localStorage.setItem('xz_last_updated', str);
-  var luEl = document.getElementById('last-updated'); if(luEl) luEl.textContent = str;
+  var luEl=document.getElementById('last-updated'); if(luEl) luEl.textContent=str;
 
-  if(!silent) {
-    var t = document.getElementById('toast'); t.textContent = 'Saved! \u2713'; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');}, 2000);
-    var tt = document.getElementById('toast-top'); if(tt){ tt.textContent='Saved! \u2713'; tt.classList.add('show'); setTimeout(function(){tt.classList.remove('show');},2000); }
+  if(!silent){
+    var t=document.getElementById('toast'); t.textContent='Saved! \u2713'; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');},2000);
+    var tt=document.getElementById('toast-top'); if(tt){tt.textContent='Saved! \u2713';tt.style.opacity='1';setTimeout(function(){tt.style.opacity='0';},2000);}
   } else {
-    var tt2 = document.getElementById('toast-top'); if(tt2){ tt2.textContent='Auto-saved'; tt2.style.opacity='0.6'; setTimeout(function(){tt2.style.opacity='0';},1500); }
+    var tt2=document.getElementById('toast-top'); if(tt2){tt2.textContent='Auto-saved';tt2.style.opacity='0.6';setTimeout(function(){tt2.style.opacity='0';},1500);}
   }
 
-  // Push to Sheets in background
   jsonp(SCRIPT_URL + '?action=save&data=' + encodeURIComponent(JSON.stringify(notes)))
-    .then(function()  { if(!silent) setStatus('Synced to Sheets \u2713'); })
-    .catch(function() { if(!silent) setStatus('Saved locally (Sheets sync failed)'); });
+    .then(function(){ if(!silent) setStatus('Synced to Sheets \u2713'); })
+    .catch(function(){ if(!silent) setStatus('Saved locally (Sheets unreachable)'); });
 }
 
-function exportNotes() {
-  saveNotes(true);
-  var blob = new Blob([JSON.stringify(notes, null, 2)], {type:'application/json'});
-  var a = document.createElement('a'); a.href = URL.createObjectURL(blob);
-  a.download = 'xuanle-notes-' + new Date().toISOString().slice(0,10) + '.json';
-  a.click();
-}
-
-function importNotes() {
-  var input = document.createElement('input'); input.type = 'file'; input.accept = '.json';
-  input.onchange = function(e) {
-    var file = e.target.files[0]; if(!file) return;
-    var reader = new FileReader();
-    reader.onload = function(ev) {
-      try {
-        notes = JSON.parse(ev.target.result);
-        localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
-        renderAll();
-        var t = document.getElementById('toast'); t.textContent = 'Notes imported! \u2713'; t.classList.add('show'); setTimeout(function(){t.classList.remove('show');}, 3000);
-      } catch(err) { alert('Invalid notes file.'); }
-    };
-    reader.readAsText(file);
-  };
-  input.click();
-}
-
-// ── HOURS DISPLAY ─────────────────────────────────────────────────────────
+// ── TIME HELPERS ──────────────────────────────────────────────────────────
 function parseClassTime(c) {
   var parts = c.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
   if(!parts) return new Date(c.date);
-  var h = parseInt(parts[1]), m = parseInt(parts[2]), ap = parts[3].toUpperCase();
+  var h=parseInt(parts[1]), m=parseInt(parts[2]), ap=parts[3].toUpperCase();
   if(ap==='PM'&&h!==12) h+=12; if(ap==='AM'&&h===12) h=0;
-  var d = new Date(c.date); d.setHours(h,m,0,0); return d;
-}
-
-function updateHoursDisplay() {
-  var now = new Date();
-  var pf = priorSessions.reduce(function(s,r){return s+r.flightTime;},0);
-  var pg = priorSessions.reduce(function(s,r){return s+r.groundTime;},0);
-  var pc = priorSessions.reduce(function(s,r){return s+sessionCost(r);},0);
-  var past = classes.filter(function(c){return parseClassTime(c)<=now;});
-  var sf = past.filter(function(c){return c.flightTime;}).reduce(function(s,c){return s+c.flightTime;},0);
-  var sg = past.filter(function(c){return c.groundTime;}).reduce(function(s,c){return s+c.groundTime;},0);
-  var sc = past.reduce(function(s,c){return s+sessionCost(c);},0);
-  var tf=pf+sf, tg=pg+sg, tc=pc+sc;
-  function sv(id,v,sfx){var el=document.getElementById(id);if(el)el.innerHTML=v+(sfx?'<span>'+sfx+'</span>':'');}
-  sv('hdr-flight',   fmtHrs(tf),'hrs');
-  sv('hdr-ground',   fmtHrs(tg),'hrs');
-  sv('hdr-total-hrs',fmtHrs(tf+tg),'hrs');
-  sv('hdr-cost',     fmtCost(tc),'');
+  var d=new Date(c.date); d.setHours(h,m,0,0); return d;
 }
 
 // ── RENDER ────────────────────────────────────────────────────────────────
 document.getElementById('today').textContent = new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
 
-function makeTA(key, placeholder) {
-  var ta = document.createElement('textarea');
-  ta.className = 'notes-area'; ta.id = 'note_' + key;
-  ta.placeholder = placeholder || 'Notes\u2026'; ta.value = notes[key] || '';
-  ta.addEventListener('input', function() {
-    this.style.height='auto'; this.style.height=this.scrollHeight+'px';
-    showSuggestion(this); liveScan(); scheduleAutoSave();
-  });
-  ta.addEventListener('keydown', function(e) {
-    if(e.key==='Tab' && ta._suggestion) {
-      e.preventDefault();
-      var val=this.value, d=Math.max(val.lastIndexOf('\n'),val.lastIndexOf(','));
-      if(d===-1){this.value=ta._suggestion;}
-      else{var b=val.slice(0,d+1),sp=val.slice(d+1).match(/^\s*/)[0];this.value=b+sp+ta._suggestion;}
-      ta._suggestion=null; this.style.height='auto'; this.style.height=this.scrollHeight+'px'; liveScan();
-    }
-  });
-  setTimeout(function(){ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';},0);
-  return ta;
-}
-
-function renderAll() {
-  updateHoursDisplay();
+function renderSchedule() {
   var container = document.getElementById('schedule');
   container.innerHTML = '';
   var now = new Date();
 
-  // Prior section
-  var div1 = document.createElement('div'); div1.className='section-divider';
-  div1.innerHTML='<div class="section-divider-line"></div><div class="section-divider-label">Prior sessions &middot; Jan 13 \u2013 Apr 22, 2026</div><div class="section-divider-line"></div>';
-  container.appendChild(div1);
-  var grid = document.createElement('div'); grid.className='prior-grid';
-  priorSessions.forEach(function(c) {
-    var cost=sessionCost(c), card=document.createElement('div');
-    card.className='class-card card-past';
-    var chips='<div class="time-chips">';
-    if(c.flightTime) chips+='<span class="chip chip-flight">&#9992; '+fmtHrs(c.flightTime)+'h</span>';
-    if(c.groundTime) chips+='<span class="chip chip-ground">Gnd '+fmtHrs(c.groundTime)+'h</span>';
-    var tot=c.flightTime+c.groundTime;
-    if(tot>0) chips+='<span class="chip chip-total">'+fmtHrs(tot)+'h total</span>';
-    chips+='<span class="chip chip-cost">'+fmtCost(cost)+'</span></div>';
-    var info=document.createElement('div'); info.className='date-info';
-    info.innerHTML='<div class="date-main"><span class="dot"></span>'+c.date+'</div>'+
-      '<div class="date-sub">'+(c.aircraft||'Ground only')+' &middot; '+c.instructor+'</div>'+chips;
-    card.appendChild(info); card.appendChild(makeTA(c.key,'What did you cover?'));
-    grid.appendChild(card);
-  });
-  container.appendChild(grid);
-
-  // Scheduled section
-  var div2=document.createElement('div'); div2.className='section-divider'; div2.style.marginTop='36px';
-  div2.innerHTML='<div class="section-divider-line"></div><div class="section-divider-label">Scheduled sessions &middot; from today</div><div class="section-divider-line"></div>';
-  container.appendChild(div2);
-
-  var todayStart=new Date(); todayStart.setHours(0,0,0,0);
-  var upcoming=classes.filter(function(c){var d=new Date(c.date);d.setHours(0,0,0,0);return d>=todayStart;});
-
-  var runCost = priorSessions.reduce(function(s,r){return s+sessionCost(r);},0)
-              + classes.filter(function(c){return parseClassTime(c)<todayStart;}).reduce(function(s,c){return s+sessionCost(c);},0);
-  var runFlight = priorSessions.reduce(function(s,r){return s+r.flightTime;},0)
-                + classes.filter(function(c){return parseClassTime(c)<todayStart&&c.flightTime;}).reduce(function(s,c){return s+c.flightTime;},0);
-  var runGround = priorSessions.reduce(function(s,r){return s+r.groundTime;},0)
-                + classes.filter(function(c){return parseClassTime(c)<todayStart&&c.groundTime;}).reduce(function(s,c){return s+c.groundTime;},0);
-
-  groupByWeek(upcoming).forEach(function(wk) {
-    var group=document.createElement('div'); group.className='week-group';
-    var hasCur=wk.items.some(function(c){return new Date(c.date).toDateString()===now.toDateString();});
+  groupByWeek(classes).forEach(function(wk){
+    var group = document.createElement('div');
+    group.className = 'month-group';
+    var hasCur = wk.items.some(function(c){ return new Date(c.date).toDateString()===now.toDateString(); });
     if(hasCur) group.classList.add('week-current');
-    group.innerHTML='<div class="week-title">'+wk.label+' <span class="week-count">'+wk.items.length+' class'+(wk.items.length>1?'es':'')+'</span></div>';
 
-    wk.items.forEach(function(c) {
-      var isToday=new Date(c.date).toDateString()===now.toDateString();
-      var isLogged=c.flightTime!=null||c.groundTime!=null;
-      var cost=isLogged?sessionCost(c):estimatedCost(c);
-      runCost+=cost;
-      if(c.flightTime) runFlight+=c.flightTime;
-      if(c.groundTime) runGround+=c.groundTime;
+    var title = document.createElement('div');
+    title.className = 'month-title';
+    title.innerHTML = wk.label + ' <span class="month-count">' + wk.items.length + ' class' + (wk.items.length>1?'es':'') + '</span>';
+    group.appendChild(title);
 
-      var card=document.createElement('div'); card.className='class-card sched';
-      if(isToday) card.classList.add('card-current');
+    var cols = Math.min(wk.items.length, 3);
+    var grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat('+cols+',1fr);gap:8px;margin-bottom:8px;';
 
-      var chips='<div class="time-chips"><span class="chip chip-duration">&#9992; '+c.duration+'</span>';
-      if(c.flightTime!=null) chips+='<span class="chip chip-flight">Flight '+fmtHrs(c.flightTime)+'h</span>';
-      if(c.groundTime!=null) chips+='<span class="chip chip-ground">Gnd '+fmtHrs(c.groundTime)+'h</span>';
-      var st=(c.flightTime||0)+(c.groundTime||0);
-      if(st>0) chips+='<span class="chip chip-total">'+fmtHrs(st)+'h total</span>';
-      chips+='<span class="chip chip-cost">'+(isLogged?'':'~')+fmtCost(cost)+'</span></div>';
+    wk.items.forEach(function(c){
+      var classTime = parseClassTime(c);
+      var isToday   = new Date(c.date).toDateString() === now.toDateString();
+      var isPast    = classTime <= now;
 
-      var totRow='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:3px;">'
-        +'<span class="chip chip-running">\u2211 '+fmtCost(runCost)+'</span>'
-        +'<span class="chip chip-flight" style="font-size:10px;">\u2211 '+fmtHrs(runFlight)+'h flt</span>'
-        +'<span class="chip chip-ground" style="font-size:10px;">\u2211 '+fmtHrs(runGround)+'h gnd</span>'
-        +'</div>';
+      // ── BUILD CARD ENTIRELY WITH DOM (no innerHTML for the textarea) ──
+      var card = document.createElement('div');
+      card.className = 'class-card';
+      if(isPast && !isToday) card.classList.add('card-past');
+      if(isToday)            card.classList.add('card-current');
 
-      var info=document.createElement('div'); info.className='date-info';
-      info.innerHTML='<div class="date-main"><span class="dot"></span>'+c.date+'</div>'
-        +'<div class="date-sub">'+c.day+' &middot; '+c.time+'</div>'
-        +'<div class="date-sub">'+c.aircraft+(c.instructor?' &middot; '+c.instructor:'')+'</div>'
-        +chips+totRow;
+      // Date row
+      var dateDiv = document.createElement('div');
+      dateDiv.className = 'card-date';
+      dateDiv.innerHTML = '<span class="dot"></span>' + c.date +
+        ' <span class="dur-badge">' + c.duration + '</span>';
+      card.appendChild(dateDiv);
 
-      var right=document.createElement('div'); right.className='card-right';
-      right.appendChild(makeTA(c.key,'Notes\u2026'));
-      card.appendChild(info); card.appendChild(right);
-      group.appendChild(card);
+      // Sub row
+      var subDiv = document.createElement('div');
+      subDiv.className = 'card-sub';
+      subDiv.textContent = c.day + ' \u00b7 ' + c.time + ' \u00b7 ' + c.aircraft + (c.instructor ? ' \u00b7 ' + c.instructor : '');
+      card.appendChild(subDiv);
+
+      // Textarea — value set here so notes are visible
+      var ta = document.createElement('textarea');
+      ta.className = 'notes-area';
+      ta.id = 'note_' + c.key;
+      ta.placeholder = 'Notes\u2026';
+      ta.value = notes[c.key] || '';   // ← this is what was broken before
+
+      ta.addEventListener('input', function(){
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+        showSuggestion(this);
+        liveScan();
+        scheduleAutoSave();
+      });
+      ta.addEventListener('keydown', function(e){
+        if(e.key==='Tab' && ta._suggestion){
+          e.preventDefault();
+          var val=this.value, d=Math.max(val.lastIndexOf('\n'),val.lastIndexOf(','));
+          if(d===-1){ this.value=ta._suggestion; }
+          else { var b=val.slice(0,d+1),sp=val.slice(d+1).match(/^\s*/)[0]; this.value=b+sp+ta._suggestion; }
+          ta._suggestion=null;
+          this.style.height='auto'; this.style.height=this.scrollHeight+'px';
+          liveScan();
+        }
+      });
+      setTimeout(function(){ ta.style.height='auto'; ta.style.height=ta.scrollHeight+'px'; }, 0);
+      card.appendChild(ta);
+
+      grid.appendChild(card);
     });
+
+    group.appendChild(grid);
     container.appendChild(group);
   });
 }
 
 function groupByWeek(arr) {
   var weeks=[], map={};
-  arr.forEach(function(c) {
+  arr.forEach(function(c){
     var d=new Date(c.date), day=d.getDay();
     var mon=new Date(d); mon.setDate(d.getDate()-(day===0?6:day-1));
     var sun=new Date(mon); sun.setDate(mon.getDate()+6);
-    function f(dt){return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'});}
+    function f(dt){ return dt.toLocaleDateString('en-US',{month:'short',day:'numeric'}); }
     var key=mon.toISOString().slice(0,10);
-    if(!map[key]){map[key]={label:'Week of '+f(mon)+' \u2013 '+f(sun),items:[]};weeks.push(map[key]);}
+    if(!map[key]){ map[key]={label:'Week of '+f(mon)+' \u2013 '+f(sun),items:[]}; weeks.push(map[key]); }
     map[key].items.push(c);
   });
   return weeks;
 }
 
-function scrollToCurrentWeek() {
-  var cur=document.querySelector('.week-current,.week-group');
-  if(cur) setTimeout(function(){cur.scrollIntoView({behavior:'smooth',block:'start'});},300);
+function scrollToCurrentWeek(){
+  var cur=document.querySelector('.week-current');
+  if(cur) setTimeout(function(){ cur.scrollIntoView({behavior:'smooth',block:'start'}); },300);
 }
 
 // ── KEYWORDS & AUTOCOMPLETE ───────────────────────────────────────────────
@@ -545,21 +381,23 @@ var KEYWORDS = [
   {label:'Night cross-country',        terms:['night cross country','night xc','night cross-country']},
   {label:'Solo day cross-country',     terms:['solo day cross','solo day xc','150 nm','3 legs','long xc']},
   {label:'Full ACS checkride review',  terms:['checkride','check ride','acs','practical test','review']},
-  {label:'Stage Check 1',              terms:['stage check 1','stage 1 check','stage1','sc1']},
-  {label:'Stage Check 2',              terms:['stage check 2','stage 2 check','stage2','sc2']},
-  {label:'Stage Check 3',              terms:['stage check 3','stage 3 check','stage3','sc3']},
+  {label:'Stage check 1',              terms:['stage check 1','stage 1 check','stage1','sc1']},
+  {label:'Stage check 2',              terms:['stage check 2','stage 2 check','stage2','sc2']},
+  {label:'Stage check 3',              terms:['stage check 3','stage 3 check','stage3','sc3']},
 ];
 var AC_TERMS = [];
-KEYWORDS.forEach(function(kw){kw.terms.forEach(function(t){AC_TERMS.push({term:t,label:kw.label});});});
+KEYWORDS.forEach(function(kw){ kw.terms.forEach(function(t){ AC_TERMS.push({term:t,label:kw.label}); }); });
 
-function showSuggestion(ta) {
+function showSuggestion(ta){
   var segs=ta.value.split(/[\n,]/), cur=segs[segs.length-1].toLowerCase().trim();
-  if(cur.length<2){ta._suggestion=null;return;}
-  var m=AC_TERMS.find(function(t){return t.term.startsWith(cur)&&t.term!==cur;});
-  var lm=!m&&KEYWORDS.find(function(kw){return kw.label.toLowerCase().startsWith(cur)&&kw.label.toLowerCase()!==cur;});
-  ta._suggestion=m?m.term:(lm?lm.label:null);
+  if(cur.length<2){ ta._suggestion=null; return; }
+  var m=AC_TERMS.find(function(t){ return t.term.startsWith(cur)&&t.term!==cur; });
+  var lm=!m&&KEYWORDS.find(function(kw){ return kw.label.toLowerCase().startsWith(cur)&&kw.label.toLowerCase()!==cur; });
+  ta._suggestion = m ? m.term : (lm ? lm.label : null);
 }
-function liveScan(){buildSummary();}
+
+function liveScan(){ buildSummary(); }
+
 function kwMatches(kw,txt){
   return kw.terms.some(function(term){
     var base=term.replace(/s$/,'');
@@ -568,20 +406,18 @@ function kwMatches(kw,txt){
 }
 
 // ── SUMMARY PANEL ─────────────────────────────────────────────────────────
-function buildSummary() {
+function buildSummary(){
   var btn=document.querySelector('.btn-refresh');
-  if(btn){btn.classList.add('spinning');setTimeout(function(){btn.classList.remove('spinning');},400);}
-  updateHoursDisplay();
+  if(btn){ btn.classList.add('spinning'); setTimeout(function(){ btn.classList.remove('spinning'); },400); }
   var panelEmpty=document.getElementById('panel-empty'), panelList=document.getElementById('panel-list');
   panelList.innerHTML=''; panelEmpty.style.display='none';
   var now=new Date();
-  var allSessions=priorSessions.concat(classes);
-  var pastSessions=allSessions.filter(function(c){return c.day?parseClassTime(c)<=now:new Date(c.date)<=now;});
-  var futureSessions=classes.filter(function(c){return parseClassTime(c)>now;});
+  var past=classes.filter(function(c){ return parseClassTime(c)<=now; });
+  var future=classes.filter(function(c){ return parseClassTime(c)>now; });
   var practiced=[],toPractice=[],notYet=[];
   KEYWORDS.forEach(function(kw){
-    var pc=pastSessions.filter(function(c){var t=(notes[c.key]||'').toLowerCase();return t.trim()&&kwMatches(kw,t);}).length;
-    var pl=futureSessions.filter(function(c){var el=document.getElementById('note_'+c.key);var t=(el?el.value:(notes[c.key]||'')).toLowerCase();return t.trim()&&kwMatches(kw,t);}).length;
+    var pc=past.filter(function(c){ var t=(notes[c.key]||'').toLowerCase(); return t.trim()&&kwMatches(kw,t); }).length;
+    var pl=future.filter(function(c){ var el=document.getElementById('note_'+c.key); var t=(el?el.value:(notes[c.key]||'')).toLowerCase(); return t.trim()&&kwMatches(kw,t); }).length;
     if(pc>0) practiced.push({label:kw.label,count:pc});
     else if(pl>0) toPractice.push({label:kw.label,count:pl});
     else notYet.push({label:kw.label});
@@ -597,13 +433,13 @@ function buildSummary() {
     });
     panelList.appendChild(sec);
   }
-  make('Practiced',practiced.sort(function(a,b){return b.count-a.count;}),'done');
-  make('Planned',toPractice,'planned');
+  make('Practiced',practiced.sort(function(a,b){ return b.count-a.count; }),'done');
+  make('To practice',toPractice,'planned');
   make('Not yet',notYet,'');
-  if(!practiced.length&&!toPractice.length){panelEmpty.style.display='block';panelEmpty.textContent='No notes yet \u2014 fill in some sessions first!';}
+  if(!practiced.length&&!toPractice.length){ panelEmpty.style.display='block'; panelEmpty.textContent='No notes yet \u2014 fill in some lessons first!'; }
 }
 
-document.addEventListener('keydown',function(e){if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveNotes();}});
+document.addEventListener('keydown',function(e){ if((e.ctrlKey||e.metaKey)&&e.key==='s'){ e.preventDefault(); saveNotes(); } });
 loadNotes();
 </script>
 </body>
