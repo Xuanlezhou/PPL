@@ -3,141 +3,573 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Xuanle — Class Schedule Plan</title>
-<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:ital,wght@0,300;0,400;0,500;1,300&display=swap" rel="stylesheet">
+<title>Xuanle — Class Schedule Plan Plan</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
 <style>
   *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
   :root {
-    --bg: #F7F5F0; --card: #FFFFFF; --accent: #C8553D; --accent-light: #F5E8E4;
-    --text: #1A1A18; --muted: #7A7870; --border: #E2DED6; --input-bg: #F7F5F0;
-    --green: #3A7D44; --green-light: #EAF5EC; --blue: #2A4A8A; --blue-light: #EEF4FF;
+    --bg: #F7F5F0;
+    --card: #FFFFFF;
+    --accent: #C8553D;
+    --accent-light: #F5E8E4;
+    --text: #1A1A18;
+    --muted: #7A7870;
+    --border: #E2DED6;
+    --input-bg: #F7F5F0;
   }
-  body { font-family: 'DM Sans', sans-serif; background: var(--bg); color: var(--text); min-height: 100vh; }
 
-  /* HEADER */
-  header { background: var(--text); color: #fff; padding: 18px 28px 22px; position: relative; overflow: hidden; }
-  header::before { content:''; position:absolute; top:-60px; right:-60px; width:240px; height:240px; border-radius:50%; background:var(--accent); opacity:0.18; }
-  header::after  { content:''; position:absolute; bottom:-40px; left:30%; width:160px; height:160px; border-radius:50%; background:var(--accent); opacity:0.10; }
-  .header-inner { max-width: 1200px; margin: 0 auto; position: relative; z-index: 1; }
-  .header-top { display:flex; align-items:flex-start; justify-content:space-between; flex-wrap:wrap; gap:16px; }
-  header h1 { font-family:'DM Serif Display',serif; font-size:clamp(18px,3vw,26px); font-weight:400; letter-spacing:-0.5px; line-height:1.1; margin-bottom:10px; }
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+    padding: 0;
+  }
+
+  header {
+    background: var(--text);
+    color: #fff;
+    padding: 14px 24px 14px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  header::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 240px; height: 240px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.18;
+  }
+
+  header::after {
+    content: '';
+    position: absolute;
+    bottom: -40px; left: 30%;
+    width: 160px; height: 160px;
+    border-radius: 50%;
+    background: var(--accent);
+    opacity: 0.10;
+  }
+
+  .header-inner { max-width: 760px; margin: 0 auto; position: relative; z-index: 1; }
+
+  header h1 {
+    font-family: 'DM Serif Display', serif;
+    font-size: clamp(18px, 3vw, 26px);
+    font-weight: 400;
+    letter-spacing: -0.5px;
+    line-height: 1.1;
+    margin-bottom: 10px;
+  }
+
   header h1 span { color: var(--accent); }
-  .header-meta { display:flex; gap:8px; margin-top:8px; flex-wrap:wrap; }
-  .badge { background:rgba(255,255,255,0.1); border:1px solid rgba(255,255,255,0.15); border-radius:100px; padding:3px 10px; font-size:11px; font-weight:300; color:rgba(255,255,255,0.8); }
-  .badge strong { color:#fff; font-weight:500; }
 
-  /* HOURS + COST BAR */
-  .hours-bar { display:flex; gap:10px; margin-top:16px; flex-wrap:wrap; }
-  .hours-tile { background:rgba(255,255,255,0.08); border:1px solid rgba(255,255,255,0.13); border-radius:10px; padding:10px 18px; min-width:120px; }
-  .hours-tile-label { font-size:9px; font-weight:500; letter-spacing:0.12em; text-transform:uppercase; color:rgba(255,255,255,0.5); margin-bottom:4px; }
-  .hours-tile-value { font-family:'DM Serif Display',serif; font-size:24px; color:#fff; line-height:1; }
-  .hours-tile-value span { font-family:'DM Sans',sans-serif; font-size:11px; font-weight:300; color:rgba(255,255,255,0.5); margin-left:2px; }
-  .hours-tile.accent { background:rgba(200,85,61,0.25); border-color:rgba(200,85,61,0.4); }
-  .hours-tile.accent .hours-tile-value { color:#FFBCAE; }
-  .hours-tile.cost { background:rgba(255,255,255,0.05); border-color:rgba(255,255,255,0.18); }
-  .hours-tile.cost .hours-tile-value { color:#FFD580; }
-
-  .header-actions { display:flex; align-items:center; gap:10px; padding-top:4px; }
-  .btn-save-header { font-family:'DM Sans',sans-serif; font-size:13px; font-weight:500; color:#fff; background:var(--accent); border:none; border-radius:100px; padding:9px 22px; cursor:pointer; transition:opacity 0.2s; }
-  .btn-save-header:hover { opacity:0.85; }
-  .toast-header { font-size:12px; color:rgba(255,255,255,0.85); background:rgba(255,255,255,0.12); border-radius:100px; padding:5px 14px; opacity:0; transition:opacity 0.3s; pointer-events:none; }
-  .toast-header.show { opacity:1; }
-
-  /* LAYOUT */
-  .page-layout { display:flex; align-items:stretch; }
-  main { flex:1; min-width:0; padding:28px 28px 80px; }
-
-  /* SECTION DIVIDER */
-  .section-divider { display:flex; align-items:center; gap:14px; margin:28px 0 18px; }
-  .section-divider-line { flex:1; height:1px; background:var(--border); }
-  .section-divider-label { font-size:10px; font-weight:500; letter-spacing:0.14em; text-transform:uppercase; color:var(--muted); white-space:nowrap; }
-
-  /* PRIOR SESSIONS GRID */
-  .prior-grid { display:grid; grid-template-columns:repeat(auto-fill,minmax(210px,1fr)); gap:9px; }
-
-  /* CARDS */
-  .class-card { background:var(--card); border:1px solid var(--border); border-radius:12px; padding:12px 14px; display:flex; flex-direction:column; gap:8px; transition:box-shadow 0.2s, border-color 0.2s; }
-  .class-card:hover { box-shadow:0 3px 16px rgba(0,0,0,0.06); border-color:#ccc; }
-  .class-card:focus-within { border-color:var(--accent); box-shadow:0 0 0 3px rgba(200,85,61,0.1); }
-  .card-past { opacity:0.5; }
-
-  /* scheduled cards — side by side */
-  .class-card.sched { flex-direction:row; align-items:start; gap:14px; }
-  .class-card.sched .date-info { width:165px; flex-shrink:0; }
-  .class-card.sched .card-right { flex:1; }
-  .card-current { border-left:3px solid var(--accent) !important; box-shadow:0 0 0 2px rgba(200,85,61,0.12); }
-  .card-current .date-main { color:var(--accent); }
-
-  /* WEEK GROUPS */
-  .week-group { margin-bottom:26px; }
-  .week-title { font-family:'DM Serif Display',serif; font-size:18px; font-weight:400; color:var(--text); margin-bottom:11px; display:flex; align-items:center; gap:10px; flex-wrap:wrap; }
-  .week-count { font-family:'DM Sans',sans-serif; font-size:11px; background:var(--accent-light); color:var(--accent); border-radius:100px; padding:2px 10px; font-weight:500; }
-  .week-current .week-title { color:var(--accent); }
-
-  .date-info { display:flex; flex-direction:column; gap:3px; }
-  .date-main { font-size:13px; font-weight:500; }
-  .date-sub { font-size:11px; color:var(--muted); font-weight:300; line-height:1.5; }
-  .dot { display:inline-block; width:5px; height:5px; border-radius:50%; background:var(--accent); margin-right:5px; vertical-align:middle; margin-bottom:1px; }
-
-  .time-chips { display:flex; gap:4px; margin-top:5px; flex-wrap:wrap; }
-  .chip { font-size:10px; font-weight:500; border-radius:100px; padding:2px 8px; }
-  .chip-flight   { background:#E8F0FF; color:#2A4A8A; }
-  .chip-ground   { background:#FFF3E0; color:#8A4A10; }
-  .chip-duration { background:var(--accent-light); color:var(--accent); }
-  .chip-cost     { background:#FFF8E1; color:#7A5800; font-weight:500; }
-  .chip-cumcost  { background:#F3E8FF; color:#5A2D8A; font-weight:500; }
-
-  .card-right { flex:1; display:flex; flex-direction:column; gap:6px; }
-  .notes-area { width:100%; font-family:'DM Sans',sans-serif; font-size:12px; font-weight:300; color:var(--text); background:var(--input-bg); border:1px solid var(--border); border-radius:6px; padding:6px 8px; resize:none; min-height:36px; line-height:1.5; overflow:hidden; transition:border-color 0.2s; }
-  .notes-area:focus { outline:none; border-color:var(--accent); background:#fff; }
-  .notes-area::placeholder { color:#B5B2AB; }
-
-  /* ACTIONS */
-  .actions { display:flex; align-items:center; gap:14px; margin-top:28px; padding-top:22px; border-top:1px solid var(--border); }
-  .btn-save  { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:500; color:#fff; background:var(--accent); border:none; border-radius:100px; padding:11px 28px; cursor:pointer; }
-  .btn-save:hover { opacity:0.88; }
-  .btn-print { font-family:'DM Sans',sans-serif; font-size:14px; font-weight:400; color:var(--muted); background:transparent; border:1px solid var(--border); border-radius:100px; padding:11px 28px; cursor:pointer; }
-  .btn-print:hover { background:var(--border); color:var(--text); }
-  .saved-toast { font-size:13px; color:var(--green); background:var(--green-light); border-radius:100px; padding:6px 16px; opacity:0; transition:opacity 0.3s; pointer-events:none; }
-  .saved-toast.show { opacity:1; }
-
-  /* SIDE PANEL */
-  .summary-panel { width:300px; flex-shrink:0; background:var(--card); border-left:1px solid var(--border); padding:22px 18px; position:sticky; top:0; height:100vh; overflow-y:auto; }
-  .panel-header { display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--border); }
-  .panel-title { font-family:'DM Serif Display',serif; font-size:15px; font-weight:400; }
-  .btn-refresh { font-size:16px; background:transparent; border:1px solid var(--border); border-radius:50%; width:30px; height:30px; cursor:pointer; color:var(--muted); display:flex; align-items:center; justify-content:center; }
-  .btn-refresh:hover { background:var(--bg); color:var(--text); }
-  .btn-refresh.spinning { animation:spin 0.6s linear; }
-  @keyframes spin { to { transform:rotate(360deg); } }
-  .panel-section { margin-bottom:16px; }
-  .panel-section-title { font-size:9px; font-weight:500; letter-spacing:0.12em; text-transform:uppercase; color:var(--muted); margin-bottom:7px; }
-  .panel-item { display:flex; align-items:center; justify-content:space-between; padding:6px 9px; border-radius:7px; margin-bottom:3px; font-size:12px; font-weight:300; color:var(--text); background:var(--bg); gap:7px; }
-  .panel-item.done    { background:var(--green-light); color:#2A6B35; }
-  .panel-item.planned { background:var(--blue-light);  color:var(--blue); }
-  .panel-item-label { flex:1; line-height:1.4; }
-  .panel-count { font-size:11px; font-weight:500; background:var(--accent-light); color:var(--accent); border-radius:100px; padding:1px 7px; white-space:nowrap; }
-  .panel-item.done    .panel-count { background:#C8EDD0; color:#2A6B35; }
-  .panel-item.planned .panel-count { background:#C8D8F5; color:var(--blue); }
-  .panel-empty { font-size:12px; color:var(--muted); font-weight:300; text-align:center; padding:16px 0; }
-
-  footer { text-align:center; font-size:11px; color:var(--muted); padding:28px; border-top:1px solid var(--border); }
-
-  @media (max-width:900px) {
-    .page-layout { flex-direction:column; }
-    .summary-panel { width:100%; border-left:none; border-top:1px solid var(--border); position:static; height:auto; }
+  .header-meta {
+    display: flex;
+    gap: 24px;
+    margin-top: 8px;
+    flex-wrap: wrap;
   }
-  @media (max-width:600px) {
-    main { padding:20px 14px 60px; }
-    .class-card.sched { flex-direction:column; }
-    .class-card.sched .date-info { width:auto; }
-    .prior-grid { grid-template-columns:1fr 1fr; }
-    .actions { flex-wrap:wrap; }
+
+  .badge {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 100px;
+    padding: 3px 10px;
+    font-size: 11px;
+    font-weight: 300;
+    color: rgba(255,255,255,0.8);
   }
-  @media (max-width:380px) { .prior-grid { grid-template-columns:1fr; } }
+
+  .badge strong { color: #fff; font-weight: 500; }
+
+  main { max-width: 760px; margin: 0 auto; padding: 40px 24px 80px; }
+
+  .section-label {
+    font-size: 11px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .month-group { margin-bottom: 24px; }
+
+  .month-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 22px;
+    font-weight: 400;
+    color: var(--text);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .month-count {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 100px;
+    padding: 2px 10px;
+    font-weight: 500;
+  }
+
+  .class-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 16px 20px;
+    margin-bottom: 10px;
+    display: grid;
+    grid-template-columns: 130px 1fr;
+    gap: 16px;
+    align-items: center;
+    transition: box-shadow 0.2s, border-color 0.2s;
+  }
+
+  .class-card:hover {
+    box-shadow: 0 4px 20px rgba(0,0,0,0.07);
+    border-color: #ccc;
+  }
+
+  .class-card:focus-within {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(200, 85, 61, 0.12);
+  }
+
+  .date-info { display: flex; flex-direction: column; gap: 2px; }
+
+  .date-main {
+    font-size: 15px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
+  .date-sub {
+    font-size: 12px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+
+  .dot {
+    display: inline-block;
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--accent);
+    margin-right: 6px;
+    vertical-align: middle;
+    margin-bottom: 1px;
+  }
+
+  .notes-area {
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: 12px;
+    font-weight: 300;
+    color: var(--text);
+    background: var(--input-bg);
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 6px 8px;
+    resize: none;
+    min-height: 36px;
+    line-height: 1.5;
+    overflow: hidden;
+    transition: border-color 0.2s;
+  }
+  .notes-area:focus { background: #fff; }
+
+  .notes-area:focus {
+    outline: none;
+    border-color: var(--accent);
+    background: #fff;
+  }
+
+  .notes-area::placeholder { color: #B5B2AB; }
+
+  .actions {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px solid var(--border);
+  }
+
+  .btn-save {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #fff;
+    background: var(--accent);
+    border: none;
+    border-radius: 100px;
+    padding: 11px 28px;
+    cursor: pointer;
+    transition: opacity 0.2s, transform 0.1s;
+  }
+
+  .btn-save:hover { opacity: 0.88; }
+  .btn-save:active { transform: scale(0.97); }
+
+  .btn-print {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 11px 28px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+
+  .btn-print:hover { background: var(--border); color: var(--text); }
+
+  .saved-toast {
+    font-size: 13px;
+    color: #3A7D44;
+    background: #EAF5EC;
+    border-radius: 100px;
+    padding: 6px 16px;
+    opacity: 0;
+    transition: opacity 0.3s;
+    pointer-events: none;
+  }
+
+  .saved-toast.show { opacity: 1; }
+
+  footer {
+    text-align: center;
+    font-size: 12px;
+    color: var(--muted);
+    padding: 32px;
+    border-top: 1px solid var(--border);
+  }
+
+  .summary-section {
+    margin-top: 48px;
+    padding-top: 32px;
+    border-top: 2px solid var(--text);
+  }
+  .summary-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 12px;
+    margin-bottom: 20px;
+  }
+  .summary-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 26px;
+    font-weight: 400;
+  }
+  .summary-meta { font-size: 12px; color: var(--muted); }
+  .summary-empty {
+    background: var(--card);
+    border: 1px dashed var(--border);
+    border-radius: 14px;
+    padding: 32px;
+    text-align: center;
+    color: var(--muted);
+    font-size: 14px;
+    font-weight: 300;
+  }
+  .summary-row {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 16px;
+    align-items: baseline;
+  }
+  .summary-date { font-size: 13px; font-weight: 500; color: var(--text); }
+  .summary-time { font-size: 11px; color: var(--muted); margin-top: 2px; }
+  .summary-note-text { font-size: 12px; font-weight: 300; color: var(--text); line-height: 1.6; white-space: pre-wrap; }
+  .btn-summary {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 14px;
+    font-weight: 400;
+    color: var(--muted);
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 100px;
+    padding: 11px 28px;
+    cursor: pointer;
+    transition: background 0.2s, color 0.2s;
+  }
+  .btn-summary:hover { background: var(--border); color: var(--text); }
+  .ai-summary-box {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 24px 28px;
+    margin-bottom: 24px;
+  }
+  .ai-summary-box h3 {
+    font-family: 'DM Serif Display', serif;
+    font-size: 17px;
+    font-weight: 400;
+    margin-bottom: 12px;
+    color: var(--text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .ai-badge {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 10px;
+    font-weight: 500;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    background: var(--accent-light);
+    color: var(--accent);
+    padding: 2px 8px;
+    border-radius: 100px;
+  }
+  .ai-summary-text {
+    font-size: 14px;
+    font-weight: 300;
+    line-height: 1.8;
+    color: var(--text);
+    white-space: pre-wrap;
+  }
+  .ai-keywords {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 16px;
+  }
+  .ai-keyword {
+    background: var(--accent-light);
+    color: var(--accent);
+    font-size: 12px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 100px;
+  }
+  .ai-loading {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    color: var(--muted);
+    font-weight: 300;
+  }
+  .ai-spinner {
+    width: 16px; height: 16px;
+    border: 2px solid var(--border);
+    border-top-color: var(--accent);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  .page-layout {
+    display: flex;
+    align-items: stretch;
+    width: 100%;
+    gap: 0;
+  }
+
+  main {
+    flex: 1;
+    min-width: 0;
+    padding: 24px 24px 60px;
+  }
+
+  .summary-panel {
+    width: 360px;
+    flex-shrink: 0;
+    background: var(--card);
+    border-left: 1px solid var(--border);
+    padding: 28px 24px;
+    position: sticky;
+    top: 0;
+    height: 100vh;
+    overflow-y: auto;
+  }
+
+  .panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 20px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .panel-title {
+    font-family: 'DM Serif Display', serif;
+    font-size: 16px;
+    font-weight: 400;
+    color: var(--text);
+  }
+
+  .btn-refresh {
+    font-size: 18px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    cursor: pointer;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, transform 0.3s;
+    line-height: 1;
+  }
+
+  .btn-refresh:hover { background: var(--bg); color: var(--text); }
+  .btn-refresh.spinning { animation: spin 0.6s linear; }
+
+  .panel-empty {
+    font-size: 13px;
+    color: var(--muted);
+    font-weight: 300;
+    text-align: center;
+    padding: 20px 0;
+  }
+
+  .panel-section {
+    margin-bottom: 20px;
+  }
+
+  .panel-section-title {
+    font-size: 9px;
+    font-weight: 500;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 8px;
+  }
+
+  .panel-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 7px 10px;
+    border-radius: 8px;
+    margin-bottom: 4px;
+    font-size: 12.5px;
+    font-weight: 300;
+    color: var(--text);
+    background: var(--bg);
+    gap: 8px;
+  }
+
+  .panel-item.done {
+    background: #EAF5EC;
+    color: #2A6B35;
+  }
+
+  .panel-item-label { flex: 1; line-height: 1.4; }
+
+  .panel-count {
+    font-size: 12px;
+    font-weight: 500;
+    background: var(--accent-light);
+    color: var(--accent);
+    border-radius: 100px;
+    padding: 1px 8px;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .panel-item.done .panel-count {
+    background: #C8EDD0;
+    color: #2A6B35;
+  }
+
+  .panel-item.planned {
+    background: #EEF4FF;
+    color: #1A3A7A;
+  }
+
+  .panel-count.planned-count {
+    background: #C8D8F5;
+    color: #1A3A7A;
+  }
+
+  .panel-item.planned {
+    background: #EEF4FF;
+    color: #2A4A8A;
+  }
+
+  .panel-count.planned-count {
+    background: #C8D8F5;
+    color: #2A4A8A;
+  }
+
+  .autocomplete-wrap { position: relative; flex: 1; }
+  .autocomplete-hint {
+    font-size: 11px;
+    color: #B5B2AB;
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 300;
+    padding: 2px 2px 0;
+    pointer-events: none;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+
+
+  .card-past {
+    opacity: 0.45;
+    filter: grayscale(30%);
+  }
+  .card-past .notes-area {
+    background: #EFEFEF;
+    color: #999;
+  }
+  .card-current {
+    border-left: 3px solid var(--accent) !important;
+    box-shadow: 0 0 0 2px rgba(200,85,61,0.15);
+  }
+  .card-current .date-main {
+    color: var(--accent);
+  }
+  .week-current .month-title {
+    color: var(--accent);
+  }
+
+  @media (max-width: 860px) {
+    .page-layout { flex-direction: column; }
+    .summary-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); position: static; max-height: none; }
+    main { max-width: 100%; }
+  }
+
+  @media (max-width: 520px) {
+    header { padding: 32px 20px 28px; }
+    main { padding: 28px 16px 60px; }
+    .class-card { grid-template-columns: 1fr; gap: 10px; }
+    .summary-row { grid-template-columns: 1fr; gap: 4px; }
+    .actions { flex-wrap: wrap; }
+  }
+
   @media print {
-    header { background:#fff; color:#000; }
-    .btn-save-header,.btn-save,.btn-print,.actions,.summary-panel { display:none; }
-    .class-card { break-inside:avoid; }
+    header { background: #fff; color: #000; }
+    header h1 span { color: var(--accent); }
+    .btn-save, .btn-print, .actions { display: none; }
+    .class-card { break-inside: avoid; }
   }
 </style>
 </head>
@@ -145,38 +577,19 @@
 
 <header>
   <div class="header-inner">
-    <div class="header-top">
+    <div style="display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:16px;">
       <div>
         <h1>Xuanle<br><span>Class Schedule Plan</span></h1>
         <div class="header-meta">
-          <span class="badge"><strong>31</strong> sessions scheduled</span>
+          <span class="badge"><strong>31</strong> sessions booked</span>
           <span class="badge"><strong>Apr 23</strong> — <strong>May 31, 2026</strong></span>
-          <span class="badge">✈ N349ME · N445AF · N488BA</span>
-          <span class="badge">East Coast Aero Club · KOWD</span>
+          <span class="badge">✈ <strong>N349ME</strong> · <strong>N445AF</strong> · <strong>N488BA</strong></span>
           <span class="badge">Updated <strong id="last-updated">—</strong></span>
         </div>
-        <div class="hours-bar">
-          <div class="hours-tile">
-            <div class="hours-tile-label">Flight hrs to date</div>
-            <div class="hours-tile-value" id="hdr-flight">—<span>hrs</span></div>
-          </div>
-          <div class="hours-tile">
-            <div class="hours-tile-label">Ground hrs to date</div>
-            <div class="hours-tile-value" id="hdr-ground">—<span>hrs</span></div>
-          </div>
-          <div class="hours-tile">
-            <div class="hours-tile-label">Total hrs to date</div>
-            <div class="hours-tile-value" id="hdr-total-hrs">—<span>hrs</span></div>
-          </div>
-          <div class="hours-tile cost">
-            <div class="hours-tile-label">Total spent to date</div>
-            <div class="hours-tile-value" id="hdr-cost">—</div>
-          </div>
-        </div>
       </div>
-      <div class="header-actions">
-        <button class="btn-save-header" onclick="saveNotes()">Save notes</button>
-        <span class="toast-header" id="toast-top"></span>
+      <div style="display:flex;align-items:center;gap:10px;padding-top:8px;">
+        <button onclick="saveNotes()" style="font-family:'DM Sans',sans-serif;font-size:14px;font-weight:500;color:#fff;background:var(--accent);border:none;border-radius:100px;padding:10px 24px;cursor:pointer;opacity:1;transition:opacity 0.2s;">Save notes</button>
+        <span class="saved-toast" id="toast-top" style="color:rgba(255,255,255,0.9);background:rgba(255,255,255,0.15);opacity:0;"></span>
       </div>
     </div>
   </div>
@@ -192,7 +605,8 @@
       <span class="saved-toast" id="load-status" style="opacity:0;"></span>
     </div>
   </main>
-  <aside class="summary-panel">
+
+  <aside class="summary-panel" id="summary-panel">
     <div class="panel-header">
       <div class="panel-title">Progress tracker</div>
       <button class="btn-refresh" onclick="buildSummary()" title="Refresh">&#8635;</button>
@@ -202,446 +616,423 @@
   </aside>
 </div>
 
-<footer>Xuanle Zhou · East Coast Aero Club · KOWD · <span id="today"></span></footer>
+<footer>Xuanle Zhou · Class Schedule Plan · Last updated <span id="today"></span></footer>
 
 <script>
-// ── RATES ─────────────────────────────────────────────────────────────────
-const RATES = {
-  'N349ME': { flight: 320 }, // $235 wet + $85 instructor
-  'N445AF': { flight: 320 }, // $235 wet + $85 instructor
-  'N488BA': { flight: 310 }, // $225 wet + $85 instructor
-};
-const GROUND_RATE = 85;
-
-function sessionCost(c) {
-  let cost = 0;
-  if (c.flightTime && c.aircraft && RATES[c.aircraft]) {
-    cost += c.flightTime * RATES[c.aircraft].flight;
-  }
-  if (c.groundTime) {
-    cost += c.groundTime * GROUND_RATE;
-  }
-  return Math.round(cost * 100) / 100;
-}
-
-function fmtCost(n) {
-  return '$' + n.toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
-}
-function fmtHrs(n) { return n.toFixed(1); }
-
-// ── PRIOR SESSIONS ────────────────────────────────────────────────────────
-const priorSessions = [
-  { date:"Jan 13, 2026",  aircraft:"N349ME", flightTime:0.70, groundTime:0.70, instructor:"Charles Prenavaeu", key:"prior_20260113" },
-  { date:"Feb 19, 2026",  aircraft:"N349ME", flightTime:0.90, groundTime:0.50, instructor:"Ken Tucker",        key:"prior_20260219" },
-  { date:"Mar 1, 2026",   aircraft:"N445AF", flightTime:0.80, groundTime:1.00, instructor:"Ronald Leung",      key:"prior_20260301" },
-  { date:"Mar 4, 2026",   aircraft:"N445AF", flightTime:1.10, groundTime:0.60, instructor:"Tom Lee",           key:"prior_20260304" },
-  { date:"Mar 10, 2026",  aircraft:"N349ME", flightTime:0.80, groundTime:1.00, instructor:"Tyler Black",       key:"prior_20260310" },
-  { date:"Mar 12, 2026",  aircraft:null,     flightTime:0,    groundTime:1.30, instructor:"Brendan Saluk",     key:"prior_20260312" },
-  { date:"Mar 15, 2026",  aircraft:"N349ME", flightTime:0.90, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260315" },
-  { date:"Mar 17, 2026",  aircraft:null,     flightTime:0,    groundTime:2.00, instructor:"Brendan Saluk",     key:"prior_20260317" },
-  { date:"Mar 18, 2026",  aircraft:"N445AF", flightTime:1.00, groundTime:0.70, instructor:"Brendan Saluk",     key:"prior_20260318" },
-  { date:"Mar 19, 2026",  aircraft:"N445AF", flightTime:1.00, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260319" },
-  { date:"Mar 24, 2026",  aircraft:"N445AF", flightTime:1.40, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260324" },
-  { date:"Mar 25, 2026",  aircraft:"N349ME", flightTime:1.30, groundTime:0.30, instructor:"Brendan Saluk",     key:"prior_20260325" },
-  { date:"Mar 26, 2026",  aircraft:"N445AF", flightTime:1.30, groundTime:0.60, instructor:"Brendan Saluk",     key:"prior_20260326" },
-  { date:"Mar 27, 2026",  aircraft:"N349ME", flightTime:1.20, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260327" },
-  { date:"Mar 29, 2026",  aircraft:"N445AF", flightTime:1.10, groundTime:1.90, instructor:"Brendan Saluk",     key:"prior_20260329" },
-  { date:"Mar 30, 2026",  aircraft:"N349ME", flightTime:1.30, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260330" },
-  { date:"Mar 31, 2026",  aircraft:"N445AF", flightTime:0.90, groundTime:1.30, instructor:"Brendan Saluk",     key:"prior_20260331" },
-  { date:"Apr 1, 2026",   aircraft:"N349ME", flightTime:1.60, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260401" },
-  { date:"Apr 2, 2026",   aircraft:null,     flightTime:0,    groundTime:0.90, instructor:"Brendan Saluk",     key:"prior_20260402" },
-  { date:"Apr 7, 2026",   aircraft:null,     flightTime:0,    groundTime:1.00, instructor:"Brendan Saluk",     key:"prior_20260407" },
-  { date:"Apr 8, 2026",   aircraft:"N445AF", flightTime:3.30, groundTime:0.70, instructor:"Brendan Saluk",     key:"prior_20260408" },
-  { date:"Apr 9, 2026",   aircraft:"N445AF", flightTime:1.30, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260409" },
-  { date:"Apr 10, 2026",  aircraft:"N349ME", flightTime:1.30, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260410" },
-  { date:"Apr 12, 2026",  aircraft:"N445AF", flightTime:1.10, groundTime:0.90, instructor:"Brendan Saluk",     key:"prior_20260412" },
-  { date:"Apr 14, 2026",  aircraft:"N445AF", flightTime:1.30, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260414" },
-  { date:"Apr 15, 2026",  aircraft:"N349ME", flightTime:1.00, groundTime:0.50, instructor:"Brendan Saluk",     key:"prior_20260415" },
-  { date:"Apr 22, 2026",  aircraft:"N349ME", flightTime:1.20, groundTime:0.40, instructor:"Brendan Saluk",     key:"prior_20260422" },
-];
-
-// ── SCHEDULED CLASSES ────────────────────────────────────────────────────
 const classes = [
-  { date:"Apr 23, 2026", day:"Thursday",  time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:1.10, groundTime:0.50, key:"20260423_6am" },
-  { date:"Apr 23, 2026", day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:null, groundTime:1.50, key:"20260423_5pm" },
-  { date:"Apr 24, 2026", day:"Friday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Tom Lee",         flightTime:1.00, groundTime:0.50, key:"20260424" },
-  { date:"Apr 25, 2026", day:"Saturday",  time:"10:00 AM", duration:"2h", aircraft:"N488BA", instructor:"Tom Lee",         flightTime:0.90, groundTime:0.30, key:"20260425" },
-  { date:"Apr 26, 2026", day:"Sunday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:1.30, groundTime:0.40, key:"20260426" },
-  { date:"Apr 26, 2026", day:"Sunday",    time:"2:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:1.20, groundTime:0.40, key:"20260426_2pm" },
-  { date:"Apr 27, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:0.90, groundTime:0.50, key:"20260427" },
-  { date:"Apr 29, 2026", day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260429" },
-  { date:"Apr 29, 2026", day:"Wednesday", time:"6:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260429_6pm" },
-  { date:"Apr 30, 2026", day:"Thursday",  time:"8:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Brendan Saluk",  flightTime:1.30, groundTime:0.60, key:"20260430_8am" },
-  { date:"Apr 30, 2026", day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260430" },
-  { date:"May 1, 2026",  day:"Friday",    time:"12:00 PM", duration:"2h", aircraft:"N488BA", instructor:"Brendan Saluk",  flightTime:1.10, groundTime:0.60, key:"20260501" },
-  { date:"May 3, 2026",  day:"Sunday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260503" },
-  { date:"May 4, 2026",  day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260504" },
-  { date:"May 4, 2026",  day:"Monday",    time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260504_5pm" },
-  { date:"May 5, 2026",  day:"Tuesday",   time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260505" },
-  { date:"May 6, 2026",  day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Marc Nathanson", flightTime:null, groundTime:null, key:"20260506" },
-  { date:"May 6, 2026",  day:"Wednesday", time:"9:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"Marc Nathanson", flightTime:null, groundTime:null, key:"20260506_9am" },
-  { date:"May 7, 2026",  day:"Thursday",  time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260507_7am" },
-  { date:"May 7, 2026",  day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260507" },
-  { date:"May 10, 2026", day:"Sunday",    time:"8:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260510" },
-  { date:"May 11, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260511" },
-  { date:"May 13, 2026", day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260513" },
-  { date:"May 14, 2026", day:"Thursday",  time:"6:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260514" },
-  { date:"May 17, 2026", day:"Sunday",    time:"8:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260517" },
-  { date:"May 18, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260518" },
-  { date:"May 20, 2026", day:"Wednesday", time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260520" },
-  { date:"May 21, 2026", day:"Thursday",  time:"5:00 PM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260521" },
-  { date:"May 24, 2026", day:"Sunday",    time:"7:00 AM",  duration:"4h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260524" },
-  { date:"May 25, 2026", day:"Monday",    time:"6:00 AM",  duration:"2h", aircraft:"N349ME", instructor:"",               flightTime:null, groundTime:null, key:"20260525" },
-  { date:"May 31, 2026", day:"Sunday",    time:"7:00 AM",  duration:"4h", aircraft:"N445AF", instructor:"",               flightTime:null, groundTime:null, key:"20260531" },
+  { date: "Apr 23, 2026", day: "Thursday",  time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260423_6am" },
+  { date: "Apr 23, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260423_5pm" },
+  { date: "Apr 24, 2026", day: "Friday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "Tom Lee", key: "20260424" },
+  { date: "Apr 25, 2026", day: "Saturday",  time: "10:00 AM", duration: "2h", aircraft: "N488BA", instructor: "Tom Lee", key: "20260425" },
+  { date: "Apr 26, 2026", day: "Sunday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260426" },
+  { date: "Apr 26, 2026", day: "Sunday",    time: "2:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260426_2pm" },
+  { date: "Apr 27, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260427" },
+  { date: "Apr 29, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260429" },
+  { date: "Apr 29, 2026", day: "Wednesday", time: "6:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260429_6pm" },
+  { date: "Apr 30, 2026", day: "Thursday",  time: "8:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260430_8am" },
+  { date: "Apr 30, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260430" },
+  { date: "May 1, 2026",  day: "Friday",    time: "12:00 PM", duration: "2h", aircraft: "N349ME", instructor: "", key: "20260501" },
+  { date: "May 3, 2026",  day: "Sunday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260503" },
+  { date: "May 4, 2026",  day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260504" },
+  { date: "May 4, 2026",  day: "Monday",    time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260504_5pm" },
+  { date: "May 5, 2026",  day: "Tuesday",   time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260505" },
+  { date: "May 6, 2026",  day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "Marc Nathanson", key: "20260506" },
+  { date: "May 6, 2026",  day: "Wednesday", time: "9:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "Marc Nathanson", key: "20260506_9am" },
+  { date: "May 7, 2026",  day: "Thursday",  time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260507_7am" },
+  { date: "May 7, 2026",  day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260507" },
+  { date: "May 10, 2026", day: "Sunday",    time: "8:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260510" },
+  { date: "May 11, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260511" },
+  { date: "May 13, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260513" },
+  { date: "May 14, 2026", day: "Thursday",  time: "6:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260514" },
+  { date: "May 17, 2026", day: "Sunday",    time: "8:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260517" },
+  { date: "May 18, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260518" },
+  { date: "May 20, 2026", day: "Wednesday", time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260520" },
+  { date: "May 21, 2026", day: "Thursday",  time: "5:00 PM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260521" },
+  { date: "May 24, 2026", day: "Sunday",    time: "7:00 AM",  duration: "4h", aircraft: "N349ME", instructor: "", key: "20260524" },
+  { date: "May 25, 2026", day: "Monday",    time: "6:00 AM",  duration: "2h", aircraft: "N349ME", instructor: "", key: "20260525" },
+  { date: "May 31, 2026", day: "Sunday",    time: "7:00 AM",  duration: "4h", aircraft: "N445AF", instructor: "", key: "20260531" },
 ];
-
-// Estimated rates for future unlogged sessions
-function estimatedCost(c) {
-  const rate = RATES[c.aircraft] ? RATES[c.aircraft].flight : 320;
-  const durHrs = parseFloat(c.duration) || 2;
-  // Estimate: full duration as flight if no data, plus ground estimate of 0.5
-  return Math.round((durHrs * rate + 0.5 * GROUND_RATE) * 100) / 100;
-}
 
 const SCRIPT_URL = 'https://script.google.com/macros/s/AKfycbzEhyAPHydRU4xN3Iyqfwq2qvqzPsAZTg0A1oY8nqM35_oNBRJd5Gd3V9Gfyh_ykf_g/exec';
 let notes = {};
 
-// ── HOURS + COST DISPLAY ──────────────────────────────────────────────────
-function parseClassTime(c) {
-  const parts = c.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
-  if(!parts) return new Date(c.date);
-  let h=parseInt(parts[1]); const m=parseInt(parts[2]); const ap=parts[3].toUpperCase();
-  if(ap==='PM'&&h!==12) h+=12; if(ap==='AM'&&h===12) h=0;
-  const d=new Date(c.date); d.setHours(h,m,0,0); return d;
-}
-
-function updateHoursDisplay() {
-  const now = new Date();
-  const priorFlight = priorSessions.reduce((s,r)=>s+r.flightTime,0);
-  const priorGround = priorSessions.reduce((s,r)=>s+r.groundTime,0);
-  const priorCost   = priorSessions.reduce((s,r)=>s+sessionCost(r),0);
-
-  const pastSched   = classes.filter(c=>parseClassTime(c)<=now);
-  const schedFlight = pastSched.filter(c=>c.flightTime).reduce((s,c)=>s+c.flightTime,0);
-  const schedGround = pastSched.filter(c=>c.groundTime).reduce((s,c)=>s+c.groundTime,0);
-  const schedCost   = pastSched.reduce((s,c)=>s+sessionCost(c),0);
-
-  const tf=priorFlight+schedFlight, tg=priorGround+schedGround, tc=priorCost+schedCost;
-
-  const sv=(id,v,sfx)=>{const el=document.getElementById(id);if(el)el.innerHTML=v+(sfx?'<span>'+sfx+'</span>':'');};
-  sv('hdr-flight',   fmtHrs(tf), 'hrs');
-  sv('hdr-ground',   fmtHrs(tg), 'hrs');
-  sv('hdr-total-hrs',fmtHrs(tf+tg),'hrs');
-  sv('hdr-cost',     fmtCost(tc), '');
-}
-
-// ── LOAD / SAVE ───────────────────────────────────────────────────────────
 function loadNotes() {
-  const status=document.getElementById('load-status');
-  status.textContent='Loading…'; status.style.opacity='1';
-  try{const c=localStorage.getItem('xz_notes_cache');if(c)notes=JSON.parse(c);}catch(e){}
-  const cbName='cb_load_'+Date.now(), script=document.createElement('script');
-  window[cbName]=function(fresh){
-    notes=fresh; localStorage.setItem('xz_notes_cache',JSON.stringify(notes));
-    const now2=new Date();
-    const str=now2.toLocaleDateString('en-US',{month:'short',day:'numeric'})+' '+now2.toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
-    localStorage.setItem('xz_last_updated',str);
-    const el=document.getElementById('last-updated');if(el)el.textContent=str;
-    renderAll(); scrollToCurrentWeek();
-    status.textContent='Synced ✓'; setTimeout(()=>{status.style.opacity='0';},2000);
-    delete window[cbName]; script.remove();
+  const status = document.getElementById('load-status');
+  status.textContent = 'Loading…';
+  status.style.opacity = '1';
+
+  // Load from cache instantly while waiting for Google
+  try {
+    const cached = localStorage.getItem('xz_notes_cache');
+    if (cached) {
+      notes = JSON.parse(cached);
+    }
+  } catch(e) {}
+
+  // Always fetch fresh from Google, then re-render
+  const cbName = 'cb_load_' + Date.now();
+  const script = document.createElement('script');
+  window[cbName] = function(fresh) {
+    notes = fresh;
+    localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
+  const now2 = new Date();
+  const updatedStr = now2.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + now2.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+  localStorage.setItem('xz_last_updated', updatedStr);
+  const luEl = document.getElementById('last-updated');
+  if (luEl) luEl.textContent = updatedStr;
+    renderSchedule();
+    buildSummary();
+    scrollToCurrentWeek();
+    status.textContent = 'Synced ✓';
+    setTimeout(() => { status.style.opacity = '0'; }, 2000);
+    delete window[cbName];
+    script.remove();
   };
-  script.onerror=function(){renderAll();scrollToCurrentWeek();status.textContent='Loaded from cache';setTimeout(()=>{status.style.opacity='0';},2000);};
-  setTimeout(()=>{if(window[cbName]){delete window[cbName];renderAll();status.textContent='Loaded from cache';setTimeout(()=>{status.style.opacity='0';},2000);}},5000);
-  script.src=SCRIPT_URL+'?callback='+cbName+'&t='+Date.now();
+  script.onerror = function() {
+    renderSchedule();
+    buildSummary();
+    scrollToCurrentWeek();
+    status.textContent = 'Loaded from cache';
+    setTimeout(() => { status.style.opacity = '0'; }, 2000);
+  };
+  // Fallback: if Google takes too long, render with cache
+  setTimeout(() => {
+    if (window[cbName]) {
+      delete window[cbName];
+      renderSchedule();
+      status.textContent = 'Loaded from cache';
+      setTimeout(() => { status.style.opacity = '0'; }, 2000);
+    }
+  }, 5000);
+  script.src = SCRIPT_URL + '?callback=' + cbName + '&t=' + Date.now();
   document.head.appendChild(script);
 }
 
-let autoSaveTimer=null;
-function scheduleAutoSave(){clearTimeout(autoSaveTimer);autoSaveTimer=setTimeout(()=>saveNotes(true),1500);}
+document.getElementById('today').textContent = new Date().toLocaleDateString('en-US', { month: 'long', day: 'numeric', year: 'numeric' });
+const savedUpdated = localStorage.getItem('xz_last_updated');
+if (savedUpdated) { const luEl = document.getElementById('last-updated'); if (luEl) luEl.textContent = savedUpdated; }
 
-function saveNotes(silent){
-  [...priorSessions,...classes].forEach(c=>{const el=document.getElementById('note_'+c.key);if(el)notes[c.key]=el.value;});
-  localStorage.setItem('xz_notes_cache',JSON.stringify(notes));
-  if(!silent){
-    const t=document.getElementById('toast');t.textContent='Notes saved! ✓';t.classList.add('show');setTimeout(()=>t.classList.remove('show'),2000);
-    const tt=document.getElementById('toast-top');if(tt){tt.textContent='Saved! ✓';tt.classList.add('show');setTimeout(()=>tt.classList.remove('show'),2000);}
-  } else {
-    const tt=document.getElementById('toast-top');if(tt){tt.textContent='Auto-saved';tt.style.opacity='0.6';setTimeout(()=>{tt.style.opacity='0';},1500);}
-  }
-  const cbName='cb_save_'+Date.now(),sc=document.createElement('script');
-  window[cbName]=function(){delete window[cbName];sc.remove();};
-  sc.onerror=function(){delete window[cbName];sc.remove();};
-  sc.src=SCRIPT_URL+'?action=save&data='+encodeURIComponent(JSON.stringify(notes))+'&callback='+cbName;
-  document.head.appendChild(sc);
+// Load from Google first, then render
+function parseClassTime(c) {
+  const parts = c.time.match(/(\d+):(\d+)\s*(AM|PM)/i);
+  if (!parts) return new Date(c.date);
+  let hours = parseInt(parts[1]);
+  const mins = parseInt(parts[2]);
+  const ampm = parts[3].toUpperCase();
+  if (ampm === 'PM' && hours !== 12) hours += 12;
+  if (ampm === 'AM' && hours === 12) hours = 0;
+  const d = new Date(c.date);
+  d.setHours(hours, mins, 0, 0);
+  return d;
 }
 
-// ── RENDER ────────────────────────────────────────────────────────────────
-document.getElementById('today').textContent=new Date().toLocaleDateString('en-US',{month:'long',day:'numeric',year:'numeric'});
-const savedUpdated=localStorage.getItem('xz_last_updated');
-if(savedUpdated){const el=document.getElementById('last-updated');if(el)el.textContent=savedUpdated;}
+function renderSchedule() {
+  const weeks = groupByWeek(classes);
+  const container = document.getElementById('schedule');
+  container.innerHTML = '';
+  const now = new Date();
 
-function makeTA(key, placeholder){
-  const ta=document.createElement('textarea');
-  ta.className='notes-area'; ta.id='note_'+key;
-  ta.placeholder=placeholder||'Notes…'; ta.value=notes[key]||'';
-  ta.addEventListener('input',function(){
-    this.style.height='auto';this.style.height=this.scrollHeight+'px';
-    showSuggestion(this);liveScan();scheduleAutoSave();
-  });
-  ta.addEventListener('keydown',function(e){
-    if(e.key==='Tab'&&ta._suggestion){
-      e.preventDefault();
-      const val=this.value,d=Math.max(val.lastIndexOf('\n'),val.lastIndexOf(','));
-      if(d===-1){this.value=ta._suggestion;}
-      else{const b=val.slice(0,d+1),sp=val.slice(d+1).match(/^\s*/)[0];this.value=b+sp+ta._suggestion;}
-      ta._suggestion=null;this.style.height='auto';this.style.height=this.scrollHeight+'px';liveScan();
-    }
-  });
-  setTimeout(()=>{ta.style.height='auto';ta.style.height=ta.scrollHeight+'px';},0);
-  return ta;
-}
+  weeks.forEach(({ label, items }) => {
+    const group = document.createElement('div');
+    group.className = 'month-group';
 
-function renderAll(){
-  updateHoursDisplay();
-  const container=document.getElementById('schedule');
-  container.innerHTML='';
-  const now=new Date();
+    const weekHasCurrent = items.some(c => new Date(c.date).toDateString() === now.toDateString());
+    if (weekHasCurrent) group.classList.add('week-current');
 
-  // ── PRIOR SECTION ──────────────────────────────────────────────────────
-  const div1=document.createElement('div');
-  div1.className='section-divider';
-  div1.innerHTML='<div class="section-divider-line"></div><div class="section-divider-label">Prior sessions · Jan 13 – Apr 22, 2026</div><div class="section-divider-line"></div>';
-  container.appendChild(div1);
+    group.innerHTML = '<div class="month-title">' + label + ' <span class="month-count">' + items.length + ' class' + (items.length > 1 ? 'es' : '') + '</span></div>';
 
-  const grid=document.createElement('div');
-  grid.className='prior-grid';
-  priorSessions.forEach(c=>{
-    const cost=sessionCost(c);
-    const card=document.createElement('div');
-    card.className='class-card card-past';
-    let chips='<div class="time-chips">';
-    if(c.flightTime) chips+='<span class="chip chip-flight">✈ '+fmtHrs(c.flightTime)+'h</span>';
-    if(c.groundTime) chips+='<span class="chip chip-ground">Gnd '+fmtHrs(c.groundTime)+'h</span>';
-    const totalHrs=c.flightTime+c.groundTime;
-    if(totalHrs>0) chips+='<span class="chip" style="background:#F0F0F0;color:#444;font-weight:500;">'+fmtHrs(totalHrs)+'h total</span>';
-    chips+='<span class="chip chip-cost">'+fmtCost(cost)+'</span>';
-    chips+='</div>';
-    const info=document.createElement('div');
-    info.className='date-info';
-    info.innerHTML='<div class="date-main"><span class="dot"></span>'+c.date+'</div>'+
-      '<div class="date-sub">'+(c.aircraft||'Ground only')+' · '+c.instructor+'</div>'+chips;
-    card.appendChild(info);
-    card.appendChild(makeTA(c.key,'What did you cover?'));
-    grid.appendChild(card);
-  });
-  container.appendChild(grid);
+    const cols = Math.min(items.length, 3);
+    const grid = document.createElement('div');
+    grid.style.cssText = 'display:grid;grid-template-columns:repeat(' + cols + ',1fr);gap:8px;';
 
-  // ── SCHEDULED SECTION ──────────────────────────────────────────────────
-  const div2=document.createElement('div');
-  div2.className='section-divider';
-  div2.style.marginTop='36px';
-  div2.innerHTML='<div class="section-divider-line"></div><div class="section-divider-label">Scheduled sessions · from today</div><div class="section-divider-line"></div>';
-  container.appendChild(div2);
+    items.forEach(c => {
+      const col = document.createElement('div');
+      const classTime = parseClassTime(c);
+      const isToday = new Date(c.date).toDateString() === now.toDateString();
+      const isPast = classTime <= now;
+      col.style.cssText = 'background:#fff;border:1px solid var(--border);border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:6px;min-height:140px;';
+      if (isPast && !isToday) col.classList.add('card-past');
+      if (isToday) col.classList.add('card-current');
+      col.innerHTML =
+        '<div style="font-size:11px;font-weight:500;color:var(--text)"><span class="dot"></span>' + c.date + ' <span style="font-size:9px;font-weight:500;background:var(--accent-light);color:var(--accent);border-radius:100px;padding:1px 6px;">' + c.duration + '</span></div>' +
+        '<div style="font-size:10px;color:var(--muted);margin-bottom:4px;">' + c.day + ' · ' + c.time + ' · ' + c.aircraft + (c.instructor ? ' · ' + c.instructor : '') + '</div>' +
+        '<textarea class="notes-area" id="note_' + c.key + '" placeholder="Notes…" style="flex:1;min-height:120px;resize:none;overflow:hidden;">' + (notes[c.key] || '') + '</textarea>';
+      const ta = col.querySelector('textarea');
+      // Ghost text approach: mirror textarea content in a background div
+      const wrap = document.createElement('div');
+      wrap.style.cssText = 'position:relative;flex:1;';
+      const ghost = document.createElement('div');
+      ghost.style.cssText = 'position:absolute;top:0;left:0;right:0;bottom:0;padding:6px 8px;font-family:DM Sans,sans-serif;font-size:12px;font-weight:300;line-height:1.5;color:transparent;white-space:pre-wrap;word-break:break-word;pointer-events:none;border:1px solid transparent;border-radius:6px;box-sizing:border-box;overflow:hidden;';
+      wrap.appendChild(ghost);
+      ta.style.cssText += 'position:relative;z-index:1;background:transparent;';
+      wrap.appendChild(ta);
 
-  // Only show sessions from today onwards
-  const todayStart=new Date(); todayStart.setHours(0,0,0,0);
-  const upcomingClasses=classes.filter(c=>{ const d=new Date(c.date); d.setHours(0,0,0,0); return d>=todayStart; });
+      ta.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = this.scrollHeight + 'px';
+        ghost.style.height = this.style.height;
+        showSuggestion(this, ghost);
+        liveScan();
+        scheduleAutoSave();
+      });
 
-  // Running cumulative cost = prior total + all past scheduled sessions + each upcoming in order
-  const priorCost=priorSessions.reduce((s,r)=>s+sessionCost(r),0);
-  const pastSchedCost=classes.filter(c=>parseClassTime(c)<todayStart).reduce((s,c)=>s+sessionCost(c),0);
-  let runningCost=priorCost+pastSchedCost;
+      ta.addEventListener('keydown', function(e) {
+        if (e.key === 'Tab' && ta._suggestion) {
+          e.preventDefault();
+          const value = this.value;
+          const lastDelim = Math.max(value.lastIndexOf('\n'), value.lastIndexOf(','));
+          if (lastDelim === -1) {
+            this.value = ta._suggestion;
+          } else {
+            const before = value.slice(0, lastDelim + 1);
+            const spacing = value.slice(lastDelim + 1).match(/^\s*/)[0];
+            this.value = before + spacing + ta._suggestion;
+          }
+          ta._suggestion = null;
+          ghost.innerHTML = '';
+          this.style.height = 'auto';
+          this.style.height = this.scrollHeight + 'px';
+          liveScan();
+        }
+      });
 
-  // running flight/ground hrs
-  const priorFlight=priorSessions.reduce((s,r)=>s+r.flightTime,0);
-  const priorGround=priorSessions.reduce((s,r)=>s+r.groundTime,0);
-  const pastSchedFlight=classes.filter(c=>parseClassTime(c)<todayStart).filter(c=>c.flightTime).reduce((s,c)=>s+c.flightTime,0);
-  const pastSchedGround=classes.filter(c=>parseClassTime(c)<todayStart).filter(c=>c.groundTime).reduce((s,c)=>s+c.groundTime,0);
-  let runningFlight=priorFlight+pastSchedFlight;
-  let runningGround=priorGround+pastSchedGround;
-
-  const weeks=groupByWeek(upcomingClasses);
-  weeks.forEach(({label,items})=>{
-    const group=document.createElement('div');
-    group.className='week-group';
-    const hasCur=items.some(c=>new Date(c.date).toDateString()===now.toDateString());
-    if(hasCur) group.classList.add('week-current');
-    group.innerHTML='<div class="week-title">'+label+' <span class="week-count">'+items.length+' class'+(items.length>1?'es':'')+'</span></div>';
-
-    items.forEach(c=>{
-      const isToday=new Date(c.date).toDateString()===now.toDateString();
-      const isLogged=c.flightTime!=null||c.groundTime!=null;
-      const cost = isLogged ? sessionCost(c) : estimatedCost(c);
-      runningCost += cost;
-      if(c.flightTime) runningFlight+=c.flightTime;
-      if(c.groundTime) runningGround+=c.groundTime;
-
-      const card=document.createElement('div');
-      card.className='class-card sched';
-      if(isToday) card.classList.add('card-current');
-
-      // chips
-      let chips='<div class="time-chips">';
-      chips+='<span class="chip chip-duration">✈ '+c.duration+'</span>';
-      if(c.flightTime!=null) chips+='<span class="chip chip-flight">Flight '+fmtHrs(c.flightTime)+'h</span>';
-      if(c.groundTime!=null) chips+='<span class="chip chip-ground">Gnd '+fmtHrs(c.groundTime)+'h</span>';
-      const sessionTotal=(c.flightTime||0)+(c.groundTime||0);
-      if(sessionTotal>0) chips+='<span class="chip" style="background:#F0F0F0;color:#444;font-weight:500;">'+fmtHrs(sessionTotal)+'h total</span>';
-      chips+='<span class="chip chip-cost">'+(isLogged?'':'~')+fmtCost(cost)+'</span>';
-      chips+='</div>';
-
-      // running totals row
-      const totalsRow='<div style="display:flex;gap:5px;flex-wrap:wrap;margin-top:2px;">'+
-        '<span class="chip" style="background:#F3E8FF;color:#5A2D8A;font-size:10px;">∑ '+fmtCost(runningCost)+'</span>'+
-        '<span class="chip chip-flight" style="font-size:10px;">∑ '+fmtHrs(runningFlight)+'h flt</span>'+
-        '<span class="chip chip-ground" style="font-size:10px;">∑ '+fmtHrs(runningGround)+'h gnd</span>'+
-        '</div>';
-
-      const info=document.createElement('div');
-      info.className='date-info';
-      info.innerHTML=
-        '<div class="date-main"><span class="dot"></span>'+c.date+'</div>'+
-        '<div class="date-sub">'+c.day+' · '+c.time+'</div>'+
-        '<div class="date-sub">'+c.aircraft+(c.instructor?' · '+c.instructor:'')+'</div>'+
-        chips+totalsRow;
-
-      const right=document.createElement('div');
-      right.className='card-right';
-      right.appendChild(makeTA(c.key,'Notes…'));
-
-      card.appendChild(info); card.appendChild(right);
-      group.appendChild(card);
+      setTimeout(() => { ta.style.height = 'auto'; ta.style.height = ta.scrollHeight + 'px'; }, 0);
+      col.appendChild(wrap);
+      grid.appendChild(col);
     });
+
+    group.appendChild(grid);
     container.appendChild(group);
   });
-
-  buildSummary();
 }
 
-function groupByWeek(arr){
-  const weeks=[],map={};
-  arr.forEach(c=>{
-    const d=new Date(c.date),day=d.getDay();
-    const mon=new Date(d); mon.setDate(d.getDate()-(day===0?6:day-1));
-    const sun=new Date(mon); sun.setDate(mon.getDate()+6);
-    const f=d=>d.toLocaleDateString('en-US',{month:'short',day:'numeric'});
-    const key=mon.toISOString().slice(0,10);
-    if(!map[key]){map[key]={label:'Week of '+f(mon)+' – '+f(sun),items:[]};weeks.push(map[key]);}
-    map[key].items.push(c);
+function groupByWeek(arr) {
+  const weeks = [];
+  const weekMap = {};
+  arr.forEach(c => {
+    const d = new Date(c.date);
+    const day = d.getDay();
+    const monday = new Date(d);
+    monday.setDate(d.getDate() - (day === 0 ? 6 : day - 1));
+    const sunday = new Date(monday);
+    sunday.setDate(monday.getDate() + 6);
+    const fmt = d => d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+    const key = monday.toISOString().slice(0, 10);
+    const label = 'Week of ' + fmt(monday) + ' – ' + fmt(sunday);
+    if (!weekMap[key]) {
+      weekMap[key] = { label, items: [] };
+      weeks.push(weekMap[key]);
+    }
+    weekMap[key].items.push(c);
   });
   return weeks;
 }
 
-function scrollToCurrentWeek(){
-  const cur=document.querySelector('.week-current,.week-group');
-  if(cur) setTimeout(()=>cur.scrollIntoView({behavior:'smooth',block:'start'}),300);
+function scrollToCurrentWeek() {
+  const current = document.querySelector('.week-current');
+  if (current) {
+    setTimeout(() => {
+      current.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    }, 300);
+  }
 }
 
-// ── KEYWORDS ──────────────────────────────────────────────────────────────
-const KEYWORDS=[
-  {label:'Normal takeoffs',            terms:['normal takeoff','normal t/o','nto','takeoff','take off','t/o']},
-  {label:'Normal landings',            terms:['normal landing','normal ldg','nldg','landing','ldg','full stop']},
-  {label:'Straight & level / climbs / descents / turns', terms:['straight and level','straight & level','s&l','climb','descent','level flight','turns']},
-  {label:'Slow flight',                terms:['slow flight','slow-flight','sf']},
-  {label:'Power-off stalls',           terms:['power off stall','power-off stall','pos','pwr off stall']},
-  {label:'Power-on stalls',            terms:['power on stall','power-on stall','pons','pwr on stall']},
-  {label:'Steep turns',                terms:['steep turn','steep turns','45 degree','45 bank','steep']},
-  {label:'Traffic pattern operations', terms:['traffic pattern','pattern work','pattern ops','pattern']},
-  {label:'Touch and goes',             terms:['touch and go','touch & go','t&g','tng','touch-and-go','tag']},
-  {label:'Rectangular course',         terms:['rectangular course','rectangular','rect course','rect']},
-  {label:'S-turns',                    terms:['s-turn','s turn','s turns','s-turns']},
-  {label:'Turns around a point',       terms:['turns around a point','turn around a point','tap','around a point']},
-  {label:'Crosswind takeoffs & landings', terms:['crosswind','cross wind','xwind','cw t/o','cw ldg']},
-  {label:'Forward and side slips',     terms:['slip','slips','forward slip','side slip','sideslip']},
-  {label:'Go-arounds / rejected takeoffs', terms:['go around','go-around','rejected takeoff','g/a','ga']},
-  {label:'Emergency approach & landing', terms:['emergency','emergency landing','forced landing','engine out','engine failure']},
-  {label:'Supervised solo',            terms:['solo','first solo','supervised solo','1st solo']},
-  {label:'Short-field takeoff & max climb', terms:['short field','short-field','max performance climb','sfto']},
-  {label:'Soft-field takeoff & landing', terms:['soft field','soft-field','softfield']},
-  {label:'Pilotage cross-countries',   terms:['pilotage','cross country','cross-country','xc','x-c']},
-  {label:'Diversion procedures',       terms:['diversion','divert','alternate']},
-  {label:'Lost procedures',            terms:['lost','lost procedures','lost comms']},
-  {label:'Emergency descent',          terms:['emergency descent','rapid descent']},
-  {label:'Solo cross-country',         terms:['solo cross country','solo xc','solo cross-country']},
-  {label:'Simulated instrument flight',terms:['simulated instrument','sim instrument','under the hood','hood work','foggles','hood']},
-  {label:'Attitude instrument flight', terms:['attitude instrument','unusual attitude','partial panel','full panel']},
-  {label:'Non-towered airports',       terms:['non-towered','non towered','untowered','ctaf','unicom']},
-  {label:'VOR navigation',             terms:['vor','vor nav','vor navigation']},
-  {label:'GPS navigation',             terms:['gps','gps nav','gps navigation','garmin']},
-  {label:'Dead reckoning',             terms:['dead reckoning','dr nav','ded reckoning']},
-  {label:'Night takeoffs & landings',  terms:['night takeoff','night landing','night t/o','night ldg']},
-  {label:'Night cross-country',        terms:['night cross country','night xc','night cross-country']},
-  {label:'Solo day cross-country',     terms:['solo day cross','solo day xc','150 nm','3 legs','long xc']},
-  {label:'Full ACS checkride review',  terms:['checkride','check ride','acs','practical test','review']},
-  {label:'Stage Check 1',              terms:['stage check 1','stage 1 check','stage1','sc1']},
-  {label:'Stage Check 2',              terms:['stage check 2','stage 2 check','stage2','sc2']},
-  {label:'Stage Check 3',              terms:['stage check 3','stage 3 check','stage3','sc3']},
+let autoSaveTimer = null;
+function scheduleAutoSave() {
+  clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => {
+    saveNotes(true);
+  }, 1500);
+}
+
+function saveNotes(silent) {
+  classes.forEach(c => {
+    const el = document.getElementById('note_' + c.key);
+    if (el) notes[c.key] = el.value;
+  });
+
+  // Save to localStorage instantly — feels immediate
+  localStorage.setItem('xz_notes_cache', JSON.stringify(notes));
+
+  // Show toast only if not silent auto-save
+  if (!silent) {
+    const toast = document.getElementById('toast');
+    toast.textContent = 'Notes saved! ✓';
+    toast.classList.add('show');
+    setTimeout(() => { toast.classList.remove('show'); }, 2000);
+    const toastTop = document.getElementById('toast-top');
+    if (toastTop) { toastTop.textContent = 'Saved! ✓'; toastTop.style.opacity = '1'; setTimeout(() => { toastTop.style.opacity = '0'; }, 2000); }
+  } else {
+    // Show subtle indicator for auto-save
+    const toastTop = document.getElementById('toast-top');
+    if (toastTop) { toastTop.textContent = 'Auto-saved'; toastTop.style.opacity = '0.6'; setTimeout(() => { toastTop.style.opacity = '0'; }, 1500); }
+  }
+
+  // Sync to Google Sheet silently in background
+  const cbName = 'cb_save_' + Date.now();
+  const script = document.createElement('script');
+  window[cbName] = function() { delete window[cbName]; script.remove(); };
+  script.onerror = function() { delete window[cbName]; script.remove(); };
+  const encoded = encodeURIComponent(JSON.stringify(notes));
+  script.src = SCRIPT_URL + '?action=save&data=' + encoded + '&callback=' + cbName;
+  document.head.appendChild(script);
+}
+
+
+const KEYWORDS = [
+  { label: 'Normal takeoffs', terms: ['normal takeoff', 'normal t/o', 'normal to', 'nto', 'norm t/o', 'norm takeoff', 'takeoff', 'take off', 't/o', 'to practice takeoff', 'landing and takeoff'] },
+  { label: 'Normal landings', terms: ['normal landing', 'normal ldg', 'nldg', 'norm ldg', 'norm landing', 'landing', 'ldg', 'full stop', 'full-stop'] },
+  { label: 'Straight & level / climbs / descents / turns', terms: ['straight and level', 'straight & level', 's&l', 'climb', 'descent', 'descend', 'level flight', 'turns', 'str & lvl', 'str and lvl', 'strt & lvl'] },
+  { label: 'Slow flight', terms: ['slow flight', 'slow-flight', 'slowflight', 'sf'] },
+  { label: 'Power-off stalls', terms: ['power off stall', 'power-off stall', 'poweroff stall', 'pos', 'pwr off stall', 'pwr-off stall', 'p/o stall', 'p-off stall', 'p off stall'] },
+  { label: 'Power-on stalls', terms: ['power on stall', 'power-on stall', 'poweron stall', 'pons', 'pwr on stall', 'pwr-on stall', 'p/on stall', 'p-on stall', 'p on stall'] },
+  { label: 'Steep turns', terms: ['steep turn', 'steep turns', '45 degree', '45°', '45 bank', 'steep'] },
+  { label: 'Traffic pattern operations', terms: ['traffic pattern', 'pattern work', 'pattern ops', 'touch and go', 'touch & go', 't&g', 'tng', 'touch-and-go', 'pattern', 't/g', 'tch & go'] },
+  { label: 'Touch and goes', terms: ['touch and go', 'touch & go', 't&g', 'tng', 'touch-and-go', 't/g', 'touch and goes', 'tch & go', 'tag'] },
+  { label: 'Rectangular course', terms: ['rectangular course', 'rectangular', 'rect course', 'rect', 'ground ref rectangular', 'ground reference rectangular', 'rectangular pattern', 'rect pattern', 'ground ref rect'] },
+  { label: 'S-turns', terms: ['s-turn', 's turn', 's turns', 's-turns', 's turns across', 's-turns across'] },
+  { label: 'Turns around a point', terms: ['turns around a point', 'turn around a point', 'tap', 'around a point', 'turns around a pt', 'turn around a pt', 'around a pt'] },
+  { label: 'Crosswind takeoffs & landings', terms: ['crosswind', 'cross wind', 'cross-wind', 'xwind', 'x-wind', 'cw t/o', 'cw ldg', 'crosswind t/o', 'crosswind ldg'] },
+  { label: 'Forward and side slips', terms: ['slip', 'slips', 'forward slip', 'side slip', 'sideslip', 'fwd slip'] },
+  { label: 'Go-arounds / rejected takeoffs', terms: ['go around', 'go-around', 'goaround', 'rejected takeoff', 'rejected t/o', 'go arnd', 'g/a', 'ga', 'rej t/o'] },
+  { label: 'Emergency approach & landing', terms: ['emergency', 'emergency landing', 'emergency approach', 'forced landing', 'engine out', 'engine failure', 'emerg ldg', 'emg', 'e-landing', 'emer apch'] },
+  { label: 'Supervised solo', terms: ['solo', 'first solo', 'supervised solo', '1st solo'] },
+  { label: 'Short-field takeoff & max climb', terms: ['short field', 'short-field', 'shortfield', 'max performance climb', 'maximum performance', 'sfto', 'sfl', 'sf t/o', 'shrt fld', 'short fld'] },
+  { label: 'Soft-field takeoff & landing', terms: ['soft field', 'soft-field', 'softfield', 'sfto', 'soft', 'sft fld', 'soft fld', 'sft t/o', 'sft ldg'] },
+  { label: 'Pilotage cross-countries (25–50 NM)', terms: ['pilotage', 'cross country', 'cross-country', 'xc', 'x-c', '25 nm', '50 nm', 'cross cntry', 'x-ctry', 'x ctry', 'xcntry'] },
+  { label: 'Diversion procedures', terms: ['diversion', 'divert', 'alternate', 'diversionary'] },
+  { label: 'Lost procedures', terms: ['lost', 'lost procedures', 'lost comms', 'lost procedure'] },
+  { label: 'Emergency descent', terms: ['emergency descent', 'rapid descent', 'emerg descent'] },
+  { label: 'Solo cross-country (nearby airport)', terms: ['solo cross country', 'solo xc', 'solo cross-country', 'solo xctry'] },
+  { label: 'Simulated instrument flight', terms: ['simulated instrument', 'sim instrument', 'under the hood', 'hood work', 'foggles', 'foggy lens', 'fog lens', 'view limiting', 'view-limiting', 'vld', 'instrument conditions', 'simulated ifr', 'sim ifr', 'hood', 'hooded', 'instrument hood', 'safety pilot'] },
+  { label: 'Attitude instrument flight', terms: ['attitude instrument', 'instrument flight', 'unusual attitude', 'instrument', 'ifr', 'basic attitude', 'partial panel', 'full panel'] },
+  { label: 'Non-towered airports', terms: ['non-towered', 'non towered', 'untowered', 'uncontrolled airport', 'ctaf', 'unicom', 'no tower', 'without tower', 'towered airport'] },
+  { label: 'VOR navigation', terms: ['vor', 'vor nav', 'vor navigation', 'vor tracking', 'vor radial'] },
+  { label: 'GPS navigation', terms: ['gps', 'gps nav', 'gps navigation', 'garmin', 'gps tracking'] },
+  { label: 'Dead reckoning', terms: ['dead reckoning', 'dr nav', 'ded reckoning', 'dr'] },
+  { label: 'Night takeoffs & landings', terms: ['night takeoff', 'night landing', 'night t/o', 'night ldg', 'night pattern'] },
+  { label: 'Night cross-country', terms: ['night cross country', 'night xc', 'night cross-country', 'night xctry'] },
+  { label: 'Solo day cross-country', terms: ['solo day cross', 'solo day xc', '150 nm', '3 legs', 'long xc', 'solo day'] },
+  { label: 'Full ACS checkride review', terms: ['checkride', 'check ride', 'acs', 'practical test', 'review', 'maneuver review', 'checkride review'] },
+  { label: 'Stage check 1', terms: ['stage check 1', 'stage 1 check', 'stage1', 'sc1', 's/c 1', 'stage check one'] },
+  { label: 'Stage check 2', terms: ['stage check 2', 'stage 2 check', 'stage2', 'sc2', 's/c 2', 'stage check two'] },
+  { label: 'Stage check 3', terms: ['stage check 3', 'stage 3 check', 'stage3', 'sc3', 's/c 3', 'stage check three'] },
 ];
-const AC_TERMS=[];
-KEYWORDS.forEach(kw=>kw.terms.forEach(t=>AC_TERMS.push({term:t,label:kw.label})));
 
-function showSuggestion(ta){
-  const val=ta.value,segs=val.split(/[\n,]/),cur=segs[segs.length-1].toLowerCase().trim();
-  if(cur.length<2){ta._suggestion=null;return;}
-  const m=AC_TERMS.find(t=>t.term.startsWith(cur)&&t.term!==cur);
-  const lm=!m&&KEYWORDS.find(kw=>kw.label.toLowerCase().startsWith(cur)&&kw.label.toLowerCase()!==cur);
-  ta._suggestion=m?m.term:(lm?lm.label:null);
+const AC_TERMS = [];
+KEYWORDS.forEach(kw => {
+  kw.terms.forEach(term => {
+    AC_TERMS.push({ term, label: kw.label });
+  });
+});
+
+function showSuggestion(ta, ghost) {
+  const value = ta.value;
+  const segments = value.split(/[\n,]/);
+  const currentSegment = segments[segments.length - 1].toLowerCase().trim();
+  if (currentSegment.length < 2) { ghost.innerHTML = ''; ta._suggestion = null; return; }
+
+  const match = AC_TERMS.find(t => t.term.startsWith(currentSegment) && t.term !== currentSegment);
+  const labelMatch = !match && KEYWORDS.find(kw => kw.label.toLowerCase().startsWith(currentSegment) && kw.label.toLowerCase() !== currentSegment);
+  const best = match ? match.term : (labelMatch ? labelMatch.label : null);
+
+  if (best) {
+    const rest = best.slice(currentSegment.length);
+    // Show full text in ghost: typed part transparent, suggestion in grey
+    ghost.innerHTML = escHtml(value) + '<span style="color:#B5B2AB;">' + escHtml(rest) + '</span>';
+    ta._suggestion = best;
+  } else {
+    ghost.innerHTML = ''; ta._suggestion = null;
+  }
 }
 
-function liveScan(){buildSummary();}
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/\n/g,'<br>');
+}
 
-function kwMatches(kw,txt){
-  return kw.terms.some(term=>{
-    const base=term.replace(/s$/,'');
-    return new RegExp('\\b'+base.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')+'s?\\b','i').test(txt);
+function liveScan() {
+  buildSummary();
+}
+
+function kwMatches(kw, noteText) {
+  return kw.terms.some(term => {
+    const base = term.replace(/s$/, '');
+    const regex = new RegExp('\\b' + base.replace(/[.*+?^${}()|[\]\\]/g, '\\$&') + 's?\\b', 'i');
+    return regex.test(noteText);
   });
 }
 
-// ── SUMMARY PANEL ────────────────────────────────────────────────────────
-function buildSummary(){
-  const btn=document.querySelector('.btn-refresh');
-  if(btn){btn.classList.add('spinning');setTimeout(()=>btn.classList.remove('spinning'),400);}
-  updateHoursDisplay();
-  const panelEmpty=document.getElementById('panel-empty');
-  const panelList=document.getElementById('panel-list');
-  panelList.innerHTML=''; panelEmpty.style.display='none';
-  const now=new Date();
-  const allSessions=[...priorSessions,...classes];
-  const pastSessions=allSessions.filter(c=>{
-    if(c.day) return parseClassTime(c)<=now;
-    return new Date(c.date)<=now;
+function buildSummary() {
+  const btn = document.querySelector('.btn-refresh');
+  if (btn) { btn.classList.add('spinning'); setTimeout(() => btn.classList.remove('spinning'), 400); }
+
+  const panelEmpty = document.getElementById('panel-empty');
+  const panelList = document.getElementById('panel-list');
+  panelList.innerHTML = '';
+  panelEmpty.style.display = 'none';
+
+  const now = new Date();
+
+  // parseClassTime is defined globally
+
+  const pastClasses = classes.filter(c => parseClassTime(c) <= now);
+  const futureClasses = classes.filter(c => parseClassTime(c) > now);
+
+  const practiced = [];
+  const toPractice = [];
+  const notYet = [];
+
+  KEYWORDS.forEach(kw => {
+    const practicedCount = pastClasses.filter(c => {
+      const noteText = (notes[c.key] || '').toLowerCase();
+      return noteText.trim() && kwMatches(kw, noteText);
+    }).length;
+
+    const plannedCount = futureClasses.filter(c => {
+      const el = document.getElementById('note_' + c.key);
+      const noteText = (el ? el.value : (notes[c.key] || '')).toLowerCase();
+      return noteText.trim() && kwMatches(kw, noteText);
+    }).length;
+
+    if (practicedCount > 0) {
+      practiced.push({ label: kw.label, count: practicedCount });
+    } else if (plannedCount > 0) {
+      toPractice.push({ label: kw.label, count: plannedCount });
+    } else {
+      notYet.push({ label: kw.label });
+    }
   });
-  const futureSessions=classes.filter(c=>parseClassTime(c)>now);
-  const practiced=[],toPractice=[],notYet=[];
-  KEYWORDS.forEach(kw=>{
-    const pc=pastSessions.filter(c=>{const t=(notes[c.key]||'').toLowerCase();return t.trim()&&kwMatches(kw,t);}).length;
-    const pl=futureSessions.filter(c=>{const el=document.getElementById('note_'+c.key);const t=(el?el.value:(notes[c.key]||'')).toLowerCase();return t.trim()&&kwMatches(kw,t);}).length;
-    if(pc>0) practiced.push({label:kw.label,count:pc});
-    else if(pl>0) toPractice.push({label:kw.label,count:pl});
-    else notYet.push({label:kw.label});
-  });
-  const make=(title,items,cls,cntCls)=>{
-    if(!items.length) return;
-    const sec=document.createElement('div'); sec.className='panel-section';
-    sec.innerHTML='<div class="panel-section-title">'+title+' ('+items.length+')</div>';
-    items.forEach(item=>{
-      const el=document.createElement('div'); el.className='panel-item '+cls;
-      el.innerHTML='<span class="panel-item-label">'+item.label+'</span>'+(item.count?'<span class="panel-count '+cntCls+'">'+item.count+'x</span>':'');
+
+  const makeSection = (title, items, itemClass, countClass) => {
+    if (items.length === 0) return;
+    const sec = document.createElement('div');
+    sec.className = 'panel-section';
+    sec.innerHTML = '<div class="panel-section-title">' + title + ' (' + items.length + ')</div>';
+    items.forEach(item => {
+      const el = document.createElement('div');
+      el.className = 'panel-item ' + itemClass;
+      el.innerHTML = '<span class="panel-item-label">' + item.label + '</span>' +
+        (item.count ? '<span class="panel-count ' + countClass + '">' + item.count + 'x</span>' : '');
       sec.appendChild(el);
     });
     panelList.appendChild(sec);
   };
-  make('Practiced',practiced.sort((a,b)=>b.count-a.count),'done','');
-  make('Planned',toPractice,'planned','planned-count');
-  make('Not yet',notYet,'','');
-  if(!practiced.length&&!toPractice.length){
-    panelEmpty.style.display='block';
-    panelEmpty.textContent='No notes yet — fill in some sessions first!';
+
+  makeSection('Practiced', practiced.sort((a,b) => b.count - a.count), 'done', '');
+  makeSection('To practice', toPractice, 'planned', 'planned-count');
+  makeSection('Not yet', notYet, '', '');
+
+  if (practiced.length === 0 && toPractice.length === 0 && notYet.length === 30) {
+    panelEmpty.style.display = 'block';
+    panelEmpty.textContent = 'No notes yet — fill in some lessons first!';
   }
 }
 
-document.addEventListener('keydown',e=>{if((e.ctrlKey||e.metaKey)&&e.key==='s'){e.preventDefault();saveNotes();}});
+
+document.addEventListener('keydown', e => {
+  if ((e.ctrlKey || e.metaKey) && e.key === 's') { e.preventDefault(); saveNotes(); }
+});
+
 loadNotes();
 </script>
 </body>
